@@ -228,13 +228,146 @@ ng build
 
 This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
-## Running unit tests
+## Testing
 
-To execute unit tests with the [Jest](https://jestjs.io/) test runner, use the following command:
+The app is tested with [Jest](https://jestjs.io/) and [`jest-preset-angular`](https://thymikee.github.io/jest-preset-angular/)
+(zoneless setup, jsdom). At the time of writing: **46 suites, 589 tests, ~99.7% statement coverage**.
 
-```bash
-npm test
-```
+### Running the tests
+
+| Command | What it does |
+| --- | --- |
+| `npm test` | Run every test once. |
+| `npm run test:watch` | Re-run only the tests affected by your changes as you save. |
+| `npm run test:coverage` | Run every test and print a coverage report (also written to `coverage/`). |
+| `npm run test:ci` | What CI runs: `--ci --runInBand --coverage`. Fails if a coverage threshold is missed. |
+| `npx jest board.service` | Run only the specs whose path matches `board.service`. |
+| `npx jest -t "adds a created board"` | Run only tests whose name matches. |
+
+### Viewing coverage
+
+`npm run test:coverage` prints a per-file table (statements, branches, functions, lines, and the uncovered
+line numbers). For a browsable view open `coverage/index.html` in a browser; it highlights every uncovered line
+and branch in the source. `coverage/lcov.info` is there for editor extensions and CI services. The folder is
+git-ignored.
+
+**What the four numbers mean**
+
+- **Statements / lines** — how much of the code ran at all.
+- **Functions** — how many functions were called at least once.
+- **Branches** — how many sides of each `if`, `?:`, `??`, `&&` and `switch` case ran. This is the most telling
+  number: a file can have 100% lines and still never test its `else`.
+
+**Thresholds.** `jest.config.ts` fails the run if coverage drops below a floor. They sit just under the current
+numbers, so a regression is caught without a single unreachable fallback blocking a commit:
+
+| Scope | Statements | Branches | Functions | Lines |
+| --- | --- | --- | --- | --- |
+| Global | 97 | 90 | 98 | 97 |
+| `shared/pipes/` (pure code) | 100 | 100 | 100 | 100 |
+| `features/board/store/` | 98 | 85 | 100 | 98 |
+| `core/` | 95 | 80 | 95 | 95 |
+
+**Coverage is a floor, not a goal.** It shows what code *never ran*; it cannot show whether the assertions are any
+good. A test with no `expect` still "covers" its lines. The first coverage report was used the other way round: to
+find what had no tests (`SelectField`'s keyboard handling, `Settings`' sync rules, the mock API's error paths) and
+then to write tests that assert behaviour there. The few remaining misses are `??` fallbacks that cannot be
+reached, plus one dead branch in `task-form.ts` (`dueDate` has no validators, so "focus the invalid due date" can
+never run).
+
+### Where tests live and how they are named
+
+Specs sit **next to the file they test**: `foo.ts` → `foo.spec.ts`. The suffix says what kind of test it is:
+
+| File name | Kind | What is real, what is mocked |
+| --- | --- | --- |
+| `foo.spec.ts` | Unit / component | The unit under test is real. Dependencies are either real-but-cheap (the store with the in-memory API) or `jest.spyOn`-ed. |
+| `foo.isolated.spec.ts` | Component in isolation | **Every** injected service is a Jest mock (`Store`, `Actions`, `Router`, `NotificationService`, …). Nothing else can make it fail. |
+| `foo.integration.spec.ts` | Integration | Real router config, real store and effects, real services, in-memory API. Driven through the UI. |
+
+Test names are sentences that state the behaviour (`'keeps the board and its tasks and shows the error when the
+server fails'`), not the method name. Group related cases with `describe`. Helpers shared between specs live in
+`src/testing/` (`wait-for.ts`, `mock-store.ts`) and `features/board/store/testing.ts` (store/API providers and
+fixtures). These are excluded from the production build and from coverage.
+
+### What is tested, by layer
+
+- **Pipes** (`shared/pipes/`) — `statusLabel`, `dueDate`, `subtaskProgress`: normal input, `null`/`undefined`/empty/invalid
+  input, timezone independence, no mutation, and Angular's own `pure` flag.
+- **Services** — `BoardService`, `TaskService` with `HttpTestingController` (verbs, URLs, params, bodies, caching,
+  error pass-through); `NotificationService`, `ThemeService`, `PreferencesService`, `AuthService` (state,
+  persistence, timers).
+- **Store** — reducer, selectors (including memoization) and effects (`concatMap` write ordering, `switchMap`
+  load cancellation, failure recovery).
+- **Components** — initialisation, `input()`/`output()` behaviour, template bindings, and DOM updates when state
+  changes (`BoardDetails`, `BoardSidebar`, `TaskDetail`, `TaskForm`, `SelectField`, …).
+- **Dependencies mocked** — `*.isolated.spec.ts` for `AddTask`, `EditTask` and `Login` check which selectors are
+  read, exactly what is dispatched or called and with which arguments, and how the component reacts to success,
+  failure, unrelated and repeated outcomes.
+- **Async** — see below.
+- **Integration** — `board-flow.integration.spec.ts` (list, sidebar, columns, task detail, edit/delete, board
+  create/delete, query params, login redirect, retry) and `app-shell.integration.spec.ts` (theme, auth, notices and
+  preferences shared through the app shell).
+
+### Mocking
+
+- **Spy on a real object** when most of it should keep working: `jest.spyOn(router, 'navigate').mockResolvedValue(true)`.
+- **Replace a service wholesale** when the component must be tested alone: `{ provide: Router, useValue: { navigate: jest.fn() } }`.
+  `createMockStore()` (in `src/testing/mock-store.ts`) stands in for NgRx's `Store`; the test pushes new state with
+  `store.set(selector, value)`.
+- **Prefer asserting on outcomes** (what the user sees, what ended up in the store) over implementation details.
+  Assert on calls only where the call *is* the behaviour (an action dispatched, a URL navigated to).
+- Spies are restored and mocks cleared automatically between tests (`restoreMocks`/`clearMocks` in `jest.config.ts`).
+
+### Asynchronous code
+
+The app's only timer is the notice auto-dismiss; everything else is Observables and Promises behind the in-memory
+API, which answers after `MOCK_API_LATENCY_MS` (0 in most specs).
+
+- **Fake timers** for anything with a delay: `jest.useFakeTimers()`, then `await jest.advanceTimersByTimeAsync(ms)`
+  to step through "waiting" and "settled" states instead of racing real time. Always restore with
+  `jest.useRealTimers()` in `afterEach`/`finally`. Install the fake clock only around the part that needs it;
+  Angular's `whenStable()` can wait forever on a fake clock.
+- **`async`/`await`** with `firstValueFrom(...)` for Observables that emit once.
+- **`waitFor(() => expect(...))`** (`src/testing/wait-for.ts`) retries an assertion until it passes or times out.
+  Jest has no built-in equivalent of Vitest's `vi.waitFor`. Use it when the thing you wait for is an effect of a
+  store dispatch rather than a timer.
+- **Never `setTimeout` a fixed sleep** and hope. Either step a fake clock or wait for a condition.
+
+### Writing tests alongside new features
+
+1. Write the test first (or at least in the same commit). A failing test proves it can fail.
+2. Start at the lowest layer that can express the behaviour: pure function → service → store → component.
+3. Add an `.isolated` spec when a component's job is mostly *talking to* services, and an `.integration` spec when
+   a feature spans several components.
+4. Check the coverage report for the files you touched. Treat an uncovered branch as a missing question, not
+   a number to fix.
+5. Run `npm run test:ci` before pushing. It is what CI will run.
+
+### Unit vs integration tests
+
+A unit test pins down one piece and mocks its neighbours; when it fails you know where to look, and it is fast. It
+cannot tell you the pieces fit together. An integration test wires real pieces together and drives them as a user
+would, so it catches what unit tests structurally cannot: a selector the component never subscribed to, an effect
+that is not registered, a route that resolves to the wrong component, a service whose answer arrives in a shape
+the component does not expect. Here, one integration test (edit a task → save → return to the detail page) fails if
+any of the router, form, effect, reducer, selector or two separate components is wrong. The cost is that a
+failure points at a flow rather than a line, so integration tests complement unit tests instead of replacing them.
+
+### Why Jest
+
+The project originally ran Vitest through Angular's `unit-test` builder; it was moved to Jest to meet the lab's
+requirements. For this project Jest gives: no browser to start (jsdom), spec files run in parallel worker
+processes with per-file isolation, a watch mode that re-runs only the specs affected by changed files, and
+mocking (`jest.fn`, `spyOn`, fake timers) and coverage built in with no extra packages.
+
+### Continuous integration
+
+`.github/workflows/ci.yml` runs on every push and pull request: install (`npm ci`), `npm run test:ci` (all tests
+plus the coverage thresholds), then `ng build`. A change that breaks a test, drops coverage below its floor, or
+breaks the build cannot be merged unnoticed. The coverage report is uploaded as a build artifact.
+Running the same suite on every change turns the tests into a safety net: refactors are cheap because a
+regression is reported minutes after it is introduced, on a clean machine, instead of by a user.
 
 ## Running end-to-end tests
 
