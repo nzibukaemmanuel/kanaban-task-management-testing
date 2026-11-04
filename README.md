@@ -14,6 +14,11 @@ npm start               # terminal 2: dev server pointed at it
 npm run generate:db     # rebuild server/db.json from board-data.ts
 ```
 
+> **"Couldn't load boards. The server can't be reached"?** The API isn't running. The app calls
+> `http://localhost:3000` (`apiUrl` in `src/environments/environment.ts`), so start `npm run api` first
+> (or `cd server && npm install && npm start`) and click **Try again**. If port 3000 is taken, set `PORT`
+> for the API and change `apiUrl` to match.
+
 ### Endpoints
 
 | Method | Path | Purpose |
