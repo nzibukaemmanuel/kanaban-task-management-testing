@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Store } from '@ngrx/store';
-import { throwError } from 'rxjs';
+import { Subject, throwError } from 'rxjs';
 import { NotificationService } from '../../../core/notification.service';
 import { BoardService } from '../board.service';
 import { selectAllTasks } from '../store/task.selectors';
@@ -211,17 +211,200 @@ describe('BoardDetails — deleting a board', () => {
   it('keeps the board and its tasks and shows the error when the server fails', async () => {
     jest.spyOn(window, 'confirm').mockReturnValue(true);
     const navigateSpy = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    jest.spyOn(boards(), 'delete').mockReturnValue(
-      throwError(() => new HttpErrorResponse({ status: 500 })),
-    );
+    jest
+      .spyOn(boards(), 'delete')
+      .mockReturnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
 
     component.deleteBoard();
 
-    await waitFor(() =>
-      expect(TestBed.inject(NotificationService).notice()?.kind).toBe('error'),
-    );
+    await waitFor(() => expect(TestBed.inject(NotificationService).notice()?.kind).toBe('error'));
     expect(boards().boardExists('roadmap')).toBe(true);
     expect(roadmapTasks().length).toBe(4);
     expect(navigateSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('BoardDetails — template', () => {
+  let fixture: ComponentFixture<BoardDetails>;
+
+  const el = () => fixture.nativeElement as HTMLElement;
+  const text = (node: Element | null | undefined) => node?.textContent?.replace(/\s+/g, ' ').trim();
+  const columns = () => Array.from(el().querySelectorAll('.board-column'));
+  const headings = () => columns().map((column) => text(column.querySelector('h2')));
+  const titlesIn = (column: Element) =>
+    Array.from(column.querySelectorAll('.task-card__title')).map((title) => text(title));
+  const render = async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+  };
+
+  async function setup(inputs: Record<string, unknown> = { boardId: 'platform-launch' }) {
+    TestBed.configureTestingModule({
+      imports: [BoardDetails],
+      providers: [provideRouter([]), provideTaskStoreForTests()],
+    });
+    fixture = TestBed.createComponent(BoardDetails);
+    for (const [name, value] of Object.entries(inputs)) {
+      fixture.componentRef.setInput(name, value);
+    }
+    await loadBoardsForTests();
+    await render();
+  }
+
+  it('shows the board id as the page heading', async () => {
+    await setup({ boardId: 'roadmap' });
+
+    expect(text(el().querySelector('h1'))).toBe('roadmap');
+  });
+
+  it('renders a column per status with the number of tasks in it', async () => {
+    await setup();
+
+    expect(headings()).toEqual(['Todo (3)', 'Doing (2)', 'Done (1)']);
+  });
+
+  it('places each task card in the column of its status, sorted by title', async () => {
+    await setup();
+
+    const [todo, doing, done] = columns();
+    expect(titlesIn(todo)).toEqual(['Prepare press kit', 'QA sign-off', 'Write launch docs']);
+    expect(titlesIn(doing)).toEqual(['Design review', 'Run beta testing']);
+    expect(titlesIn(done)).toEqual(['Define MVP scope']);
+  });
+
+  it('links each card to its task detail route', async () => {
+    await setup();
+
+    const card = el().querySelector<HTMLAnchorElement>('.task-card')!;
+    expect(card.getAttribute('href')).toMatch(/\/tasks\/[a-z0-9-]+$/);
+  });
+
+  it('summarises subtask progress on a card via the subtaskProgress pipe', async () => {
+    await setup();
+
+    const meta = Array.from(el().querySelectorAll('.task-card__meta')).map((node) => text(node));
+    expect(meta).toContain('3 of 3 subtasks');
+  });
+
+  it('omits the progress line for a task with no subtasks', async () => {
+    await setup({ boardId: 'roadmap' });
+    TestBed.inject(Store).dispatch(
+      TaskActions.updateTask({
+        boardId: 'roadmap',
+        taskId: 'q1-goals',
+        task: fixtureTaskValue('roadmap', 'q1-goals', { subtasks: [] }),
+      }),
+    );
+    await waitFor(() =>
+      expect(fixture.componentInstance.tasks().find((t) => t.id === 'q1-goals')?.subtasks).toEqual(
+        [],
+      ),
+    );
+    await render();
+
+    const card = Array.from(el().querySelectorAll('.task-card')).find(
+      (node) => text(node.querySelector('.task-card__title')) === 'Set Q1 goals',
+    );
+    expect(card).toBeDefined();
+    expect(card?.querySelector('.task-card__meta')).toBeNull();
+  });
+
+  it('narrows the board to the single matching column when a status filter is set', async () => {
+    await setup({ boardId: 'platform-launch', status: 'doing' });
+
+    expect(headings()).toEqual(['Doing (2)']);
+  });
+
+  it('updates the columns when the status input changes', async () => {
+    await setup();
+
+    fixture.componentRef.setInput('status', 'done');
+    await render();
+
+    expect(headings()).toEqual(['Done (1)']);
+  });
+
+  it('shows "No tasks" in a column that has none', async () => {
+    await setup({ boardId: 'platform-launch' });
+    TestBed.inject(Store).dispatch(
+      TaskActions.deleteTask({ boardId: 'platform-launch', taskId: 'define-scope' }),
+    );
+    await waitFor(() => expect(fixture.componentInstance.tasks().length).toBe(5));
+    await render();
+
+    expect(text(columns()[2].querySelector('.board-column__empty'))).toBe('No tasks');
+    expect(headings()[2]).toBe('Done (0)');
+  });
+
+  it('reflects a task moved to another status without a reload', async () => {
+    await setup();
+
+    TestBed.inject(Store).dispatch(
+      TaskActions.updateTask({
+        boardId: 'platform-launch',
+        taskId: 'press-kit',
+        task: fixtureTaskValue('platform-launch', 'press-kit', { status: 'done' }),
+      }),
+    );
+    await waitFor(() =>
+      expect(fixture.componentInstance.tasks().find((t) => t.id === 'press-kit')?.status).toBe(
+        'done',
+      ),
+    );
+    await render();
+
+    expect(headings()).toEqual(['Todo (2)', 'Doing (2)', 'Done (2)']);
+    expect(titlesIn(columns()[2])).toContain('Prepare press kit');
+  });
+
+  it('wires the Add New Task link and the Delete board button into the toolbar', async () => {
+    await setup();
+
+    const add = el().querySelector<HTMLAnchorElement>('.board-toolbar a.btn');
+    expect(text(add)).toBe('+ Add New Task');
+    expect(add?.getAttribute('href')).toContain('new-task');
+    expect(text(el().querySelector('.btn-secondary'))).toBe('Delete board');
+  });
+
+  it('disables the Delete board button and relabels it while a delete is in flight', async () => {
+    await setup({ boardId: 'roadmap' });
+    jest.spyOn(window, 'confirm').mockReturnValue(true);
+    jest.spyOn(TestBed.inject(BoardService), 'delete').mockReturnValue(new Subject<void>());
+
+    fixture.componentInstance.deleteBoard();
+    await render();
+
+    const button = el().querySelector<HTMLButtonElement>('.btn-secondary')!;
+    expect(button.disabled).toBe(true);
+    expect(text(button)).toBe('Deleting…');
+  });
+
+  it('navigates back to the board list from the footer button', async () => {
+    await setup();
+    const navigateSpy = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    el().querySelector<HTMLButtonElement>('.page-nav button')!.click();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/boards']);
+  });
+
+  it('shows the not-found page instead of an empty board for an unknown board id', async () => {
+    await setup({ boardId: 'does-not-exist' });
+
+    expect(el().querySelector('app-not-found')).not.toBeNull();
+    expect(el().querySelector('.board-page')).toBeNull();
+  });
+
+  it('shows a loading indicator, not the board, until the data has loaded', async () => {
+    TestBed.configureTestingModule({
+      imports: [BoardDetails],
+      providers: [provideRouter([]), provideTaskStoreForTests({ seeded: false })],
+    });
+    fixture = TestBed.createComponent(BoardDetails);
+    fixture.componentRef.setInput('boardId', 'platform-launch');
+    await render();
+
+    expect(text(el().querySelector('.data-state'))).toContain('Loading board…');
+    expect(el().querySelector('.board-page')).toBeNull();
   });
 });
