@@ -1,0 +1,17 @@
+@if (task(); as t) {
+  <div class="page-header">
+    <h2>Edit task</h2>
+  </div>
+
+  <app-task-form
+    [initialTask]="t"
+    [existingTitles]="existingTitles()"
+    [saving]="saving()"
+    submitLabel="Save changes"
+    (save)="onSave($event)"
+    (cancel)="onCancel()"
+  />
+} @else {
+  <p class="empty-state">Task not found.</p>
+  <button type="button" class="btn-secondary" (click)="goToBoard()">&larr; Back to board</button>
+}

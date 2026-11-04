@@ -1,0 +1,36 @@
+<aside class="board-sidebar" [class.board-sidebar--collapsed]="collapsed()">
+  <div class="board-sidebar__inner">
+    <p class="board-sidebar__heading">All boards ({{ boardIds().length }})</p>
+    <nav aria-label="Boards">
+      <ul class="board-sidebar__list">
+        @for (boardId of boardIds(); track boardId) {
+          <li>
+            <a
+              class="board-sidebar__link"
+              [routerLink]="['/boards', boardId]"
+              routerLinkActive="board-sidebar__link--active"
+            >
+              <span class="board-sidebar__icon" aria-hidden="true"></span>
+              <span class="board-sidebar__label">{{ boardId }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+  </div>
+
+  <button type="button" class="board-sidebar__toggle" (click)="toggleCollapsed()">
+    <span aria-hidden="true">&#8676;</span> Hide sidebar
+  </button>
+</aside>
+
+@if (collapsed()) {
+  <button
+    type="button"
+    class="board-sidebar__show"
+    (click)="toggleCollapsed()"
+    aria-label="Show sidebar"
+  >
+    <span aria-hidden="true">&#8677;</span>
+  </button>
+}

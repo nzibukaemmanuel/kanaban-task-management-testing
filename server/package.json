@@ -1,0 +1,13 @@
+{
+  "name": "kanban-api",
+  "version": "0.0.0",
+  "private": true,
+  "description": "json-server REST API for the Kanban app; deployed on its own (see ../render.yaml).",
+  "type": "module",
+  "scripts": {
+    "start": "node start-api.mjs"
+  },
+  "dependencies": {
+    "json-server": "0.17.4"
+  }
+}

@@ -1,0 +1,78 @@
+.auth-card {
+  max-width: 400px;
+  margin: var(--space-8) auto 0;
+  padding: var(--space-8);
+  text-align: center;
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-resting);
+}
+
+.auth-card button {
+  width: 100%;
+}
+
+.auth-hint {
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-6);
+  background: var(--color-accent-section);
+  color: var(--color-dark);
+  border-radius: var(--radius-sm);
+  font-size: var(--size-small);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  text-align: left;
+}
+
+.login-form label {
+  max-width: none;
+}
+
+.auth-error {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-status-error-bg);
+  color: var(--color-status-error-text);
+  border-radius: var(--radius-sm);
+  font-size: var(--size-small);
+  font-weight: 600;
+}
+
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: calc(var(--space-4) * 2 + 40px);
+}
+
+.password-field .password-toggle {
+  position: absolute;
+  top: 50%;
+  right: var(--space-2);
+  transform: translateY(-50%);
+  width: auto;
+  background: transparent;
+  color: var(--color-muted-text);
+  border: none;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--size-xs);
+  font-weight: 600;
+}
+
+.password-field .password-toggle:hover {
+  background: var(--color-card-hover);
+  color: var(--color-primary);
+  transform: translateY(-50%);
+  box-shadow: none;
+}
+
+.password-field .password-toggle:active {
+  transform: translateY(-50%);
+  box-shadow: none;
+}

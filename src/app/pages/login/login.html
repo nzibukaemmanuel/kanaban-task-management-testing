@@ -1,0 +1,43 @@
+<div class="auth-card">
+  <h1>Log in</h1>
+
+
+  <form class="login-form" (submit)="$event.preventDefault(); submit()">
+    <label>
+      Username
+      <input
+        type="text"
+        autocomplete="username"
+        [value]="username()"
+        (input)="username.set($any($event.target).value)"
+      />
+    </label>
+
+    <label>
+      Password
+      <div class="password-field">
+        <input
+          [type]="showPassword() ? 'text' : 'password'"
+          autocomplete="current-password"
+          [value]="password()"
+          (input)="password.set($any($event.target).value)"
+        />
+        <button
+          type="button"
+          class="password-toggle"
+          [attr.aria-pressed]="showPassword()"
+          [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+          (click)="showPassword.set(!showPassword())"
+        >
+          {{ showPassword() ? 'Hide' : 'Show' }}
+        </button>
+      </div>
+    </label>
+
+    @if (error(); as message) {
+      <p class="auth-error" role="alert">{{ message }}</p>
+    }
+
+    <button type="submit">Log in</button>
+  </form>
+</div>

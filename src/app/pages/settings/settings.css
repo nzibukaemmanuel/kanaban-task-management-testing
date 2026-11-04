@@ -1,0 +1,52 @@
+.page-header {
+  margin-bottom: var(--space-8);
+}
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-6);
+  max-width: 400px;
+  padding: var(--space-8);
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-resting);
+}
+
+.settings-form > label {
+  max-width: none;
+}
+
+.settings-fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.settings-fieldset legend {
+  padding: 0;
+  margin-bottom: var(--space-2);
+  font-size: var(--size-small);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.settings-radio,
+.settings-checkbox {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.settings-radio input,
+.settings-checkbox input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+}
+

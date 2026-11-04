@@ -1,0 +1,81 @@
+.task-detail-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  margin-bottom: var(--space-8);
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-resting);
+}
+
+.task-detail-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.task-detail-card h2 {
+  margin: 0;
+}
+
+.task-detail-card__description {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.task-detail-card__due-date {
+  margin: 0;
+  font-size: var(--size-small);
+  font-weight: 600;
+  color: var(--color-muted-text);
+}
+
+.task-detail-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+/* Back-to-board is a nav action, not a task action — keep it visually separate by pushing it
+   to the far end of the row, but still in the same flex-wrap group so it wraps alongside
+   Edit/Delete instead of landing in its own row far below the card. */
+.task-detail-card__actions .btn-tertiary {
+  margin-left: auto;
+}
+
+.task-detail-card__subtasks-summary {
+  margin: 0 0 var(--space-2);
+  font-size: var(--size-small);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.task-detail-card__subtask-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.task-detail-card__subtask-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--size-small);
+  color: var(--color-text-secondary);
+}
+
+.task-detail-card__subtask-list input[type='checkbox'] {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+}
+
+.task-detail-card__subtask-list .done {
+  color: var(--color-muted-text);
+  text-decoration: line-through;
+}

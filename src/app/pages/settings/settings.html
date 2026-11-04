@@ -1,0 +1,49 @@
+<div class="page-header">
+  <h1>Settings</h1>
+  <p>Application settings will appear here.</p>
+</div>
+
+<form class="settings-form" [formGroup]="form" (ngSubmit)="save()">
+  <label>
+    Display name:
+    <input type="text" formControlName="displayName" />
+  </label>
+
+  <fieldset class="settings-fieldset">
+    <legend>Theme</legend>
+    <label class="settings-radio">
+      <input type="radio" formControlName="theme" value="light" />
+      Light
+    </label>
+    <label class="settings-radio">
+      <input type="radio" formControlName="theme" value="dark" />
+      Dark
+    </label>
+  </fieldset>
+
+  <label class="settings-checkbox">
+    <input type="checkbox" formControlName="confirmBeforeDelete" />
+    Ask for confirmation before deleting a task
+  </label>
+
+  <label class="settings-checkbox">
+    <input type="checkbox" formControlName="persistSuccessNotices" />
+    Keep success messages on screen until dismissed
+  </label>
+
+  <label>
+    Default board after login:
+    <app-select-field
+      [options]="boardOptions()"
+      [value]="form.controls.defaultBoardId.value"
+      ariaLabel="Default board after login"
+      (valueChange)="setDefaultBoardId($event)"
+    />
+  </label>
+
+  @if (hasUnsavedChanges()) {
+    <p class="unsaved-hint" role="status">You have unsaved changes.</p>
+  }
+
+  <button type="submit">Save &amp; return to boards</button>
+</form>

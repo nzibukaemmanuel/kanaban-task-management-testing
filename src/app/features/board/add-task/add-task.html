@@ -1,0 +1,11 @@
+<div class="page-header">
+  <h2>Add task</h2>
+</div>
+
+<app-task-form
+  [existingTitles]="existingTitles()"
+  [saving]="saving()"
+  submitLabel="Add task"
+  (save)="onSave($event)"
+  (cancel)="onCancel()"
+/>

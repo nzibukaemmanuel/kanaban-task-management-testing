@@ -1,0 +1,128 @@
+/* Fills the viewport height so .app-main can hand the routed page (e.g. the board) exactly
+   "the rest of the screen" to work with, instead of the page growing to fit its content. */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-8);
+  background: var(--color-card);
+  box-shadow: var(--shadow-resting);
+}
+
+.app-title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: var(--color-text);
+  margin-right: auto;
+}
+
+.app-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.app-nav a,
+.app-nav .link-button {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) 0;
+  font-size: var(--size-small);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  border-bottom: 2px solid transparent;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.app-nav a:hover,
+.app-nav .link-button:hover {
+  color: var(--color-primary);
+}
+
+.app-nav a.active {
+  color: var(--color-primary);
+  font-weight: 600;
+  border-bottom-color: var(--color-primary);
+}
+
+.app-nav .link-button {
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-weight: 500;
+  padding: var(--space-2) 0;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.theme-toggle {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--size-small);
+  font-weight: 500;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  box-shadow: none;
+}
+
+.theme-toggle:hover {
+  background: var(--color-card-hover);
+  color: var(--color-primary);
+  transform: none;
+  box-shadow: none;
+}
+
+.nav-progress {
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+  animation: nav-progress-pulse 1s ease-in-out infinite;
+}
+
+@keyframes nav-progress-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.app-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-width: var(--content-max-width);
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-8);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 700px) {
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    position: static;
+  }
+
+  .app-nav {
+    flex-wrap: wrap;
+  }
+}

@@ -1,0 +1,14 @@
+# Render Blueprint: hosts the json-server REST API (server/db.json) for the production build.
+# The API has its own package.json in server/, so only json-server is installed there.
+# Data resets to db.json whenever the free instance restarts.
+services:
+  - type: web
+    name: kanban-api
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node start-api.mjs
+    envVars:
+      - key: HOST
+        value: 0.0.0.0

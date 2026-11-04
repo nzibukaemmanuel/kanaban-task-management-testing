@@ -1,0 +1,140 @@
+/* Lets the <aside> and the floating "show sidebar" button participate directly in the parent
+   .board-layout flex row, instead of being boxed inside the <app-board-sidebar> element. */
+:host {
+  display: contents;
+}
+
+.board-sidebar {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-self: stretch;
+  width: 260px;
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-resting);
+  overflow: hidden;
+}
+
+.board-sidebar--collapsed {
+  display: none;
+}
+
+.board-sidebar__inner {
+  padding: var(--space-8) 0;
+  overflow-y: auto;
+}
+
+.board-sidebar__heading {
+  margin: 0 0 var(--space-6);
+  padding: 0 var(--space-8);
+  font-size: var(--size-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted-text);
+}
+
+.board-sidebar__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.board-sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-8);
+  margin-right: var(--space-6);
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  font-weight: 600;
+  font-size: var(--size-small);
+  color: var(--color-text-secondary);
+  text-transform: capitalize;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.board-sidebar__icon {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+.board-sidebar__link:hover {
+  background: var(--color-card-hover);
+  color: var(--color-primary);
+}
+
+.board-sidebar__link--active {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.board-sidebar__link--active .board-sidebar__icon {
+  opacity: 1;
+}
+
+.board-sidebar__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-4) var(--space-8) var(--space-6);
+  background: transparent;
+  color: var(--color-text-secondary);
+  box-shadow: none;
+  padding: var(--space-2) var(--space-3);
+  align-self: flex-start;
+}
+
+.board-sidebar__toggle:hover {
+  background: var(--color-card-hover);
+  color: var(--color-primary);
+  transform: none;
+  box-shadow: none;
+}
+
+.board-sidebar__show {
+  position: sticky;
+  top: calc(var(--space-8) + 3.5rem);
+  align-self: flex-start;
+  padding: var(--space-3);
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  box-shadow: var(--shadow-resting);
+}
+
+@media (max-width: 900px) {
+  .board-sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .board-sidebar__inner {
+    padding: var(--space-4);
+    overflow-x: auto;
+  }
+
+  .board-sidebar__list {
+    flex-direction: row;
+  }
+
+  .board-sidebar__link {
+    border-radius: var(--radius-pill);
+    margin-right: 0;
+    white-space: nowrap;
+  }
+
+  .board-sidebar__toggle {
+    flex-shrink: 0;
+    margin: 0 var(--space-4);
+  }
+
+  .board-sidebar__show {
+    position: static;
+  }
+}

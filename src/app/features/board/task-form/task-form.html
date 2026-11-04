@@ -1,0 +1,140 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="task-form">
+  <p class="task-form__required-note">
+    Fields marked <span aria-hidden="true">*</span> are required.
+  </p>
+
+  <label>
+    Title <span class="required-indicator" aria-hidden="true">*</span>
+    <input
+      #titleInput
+      type="text"
+      formControlName="title"
+      aria-required="true"
+      [attr.aria-invalid]="form.controls.title.invalid && form.controls.title.touched ? true : null"
+      [attr.aria-describedby]="
+        form.controls.title.invalid && form.controls.title.touched ? titleErrorId : null
+      "
+    />
+  </label>
+
+  @if (form.controls.title.invalid && form.controls.title.touched) {
+    <p class="field-error" role="alert" [id]="titleErrorId">
+      @if (form.controls.title.hasError('required')) {
+        Title is required.
+      } @else if (form.controls.title.hasError('minlength')) {
+        Title must be at least 3 characters.
+      } @else if (form.controls.title.hasError('duplicateTitle')) {
+        A task with this title already exists on this board.
+      }
+    </p>
+  }
+
+  <label>
+    Description
+    <textarea
+      #descriptionInput
+      formControlName="description"
+      rows="4"
+      maxlength="500"
+      [attr.aria-invalid]="
+        form.controls.description.invalid && form.controls.description.touched ? true : null
+      "
+      [attr.aria-describedby]="
+        form.controls.description.invalid && form.controls.description.touched
+          ? descriptionErrorId
+          : null
+      "
+    ></textarea>
+  </label>
+
+  @if (form.controls.description.invalid && form.controls.description.touched) {
+    <p class="field-error" role="alert" [id]="descriptionErrorId">
+      Description must be 500 characters or fewer.
+    </p>
+  }
+
+  <div class="task-form__row">
+    <label>
+      <span [id]="statusLabelId"
+        >Status <span class="required-indicator" aria-hidden="true">*</span></span
+      >
+      <app-select-field
+        [options]="statusOptions"
+        [value]="status()"
+        [ariaLabelledby]="statusLabelId"
+        [ariaRequired]="true"
+        [ariaInvalid]="form.controls.status.invalid && form.controls.status.touched ? true : null"
+        [ariaDescribedby]="
+          form.controls.status.invalid && form.controls.status.touched ? statusErrorId : null
+        "
+        (valueChange)="setStatus($event)"
+      />
+    </label>
+
+    <label>
+      Due date
+      <input #dueDateInput type="date" formControlName="dueDate" />
+    </label>
+  </div>
+
+  @if (form.controls.status.invalid && form.controls.status.touched) {
+    <p class="field-error" role="alert" [id]="statusErrorId">Status is required.</p>
+  }
+
+  <fieldset class="subtasks" formArrayName="subtasks">
+    <legend>Subtasks</legend>
+
+    <div class="subtasks__list">
+      @for (subtask of form.controls.subtasks.controls; track subtask.value.id; let i = $index) {
+        <div class="subtask-row" [formGroupName]="i">
+          <input
+            type="checkbox"
+            formControlName="completed"
+            [attr.aria-label]="'Mark subtask ' + (i + 1) + ' complete'"
+          />
+          <input
+            #subtaskTitleInput
+            type="text"
+            formControlName="title"
+            placeholder="Subtask name"
+            [attr.aria-label]="'Subtask ' + (i + 1) + ' name'"
+            [attr.aria-invalid]="
+              subtask.controls.title.invalid && subtask.controls.title.touched ? true : null
+            "
+            [attr.aria-describedby]="
+              subtask.controls.title.invalid && subtask.controls.title.touched
+                ? subtaskErrorId(i)
+                : null
+            "
+          />
+          <button
+            type="button"
+            class="btn-secondary"
+            (click)="removeSubtask(i)"
+            [attr.aria-label]="'Remove subtask ' + (i + 1)"
+          >
+            Remove
+          </button>
+        </div>
+        @if (subtask.controls.title.invalid && subtask.controls.title.touched) {
+          <p class="field-error" role="alert" [id]="subtaskErrorId(i)">Subtask name is required.</p>
+        }
+      } @empty {
+        <p class="empty-state">No subtasks yet.</p>
+      }
+    </div>
+
+    <button #addSubtaskButton type="button" class="btn-secondary" (click)="addSubtask()">
+      + Add subtask
+    </button>
+  </fieldset>
+
+  @if (isDirty()) {
+    <p class="unsaved-hint" role="status">You have unsaved changes.</p>
+  }
+
+  <div class="task-form__actions">
+    <button type="button" class="btn-secondary" (click)="cancel.emit()">Cancel</button>
+    <button type="submit" [disabled]="saving()">{{ saving() ? 'Saving…' : submitLabel() }}</button>
+  </div>
+</form>

@@ -1,0 +1,211 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.board-page {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-8);
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.board-page__content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.board-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.board-toolbar__heading h1 {
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.board-toolbar__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.board-toolbar__controls label {
+  flex-direction: row;
+  align-items: center;
+  max-width: none;
+}
+
+/* The column strip scrolls horizontally as a unit on a narrow viewport (swipe sideways between
+   columns), while each column's own task list scrolls vertically (see .board-column__list) —
+   together that lets the whole board fit in one screen instead of the page growing to fit
+   however many tasks/columns there are. */
+.board-columns {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-8);
+  overflow-x: auto;
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.board-column {
+  flex: 1 1 280px;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.board-column__heading {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-6);
+  font-family: var(--font-sans);
+  font-size: var(--size-small);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted-text);
+}
+
+.board-column__dot {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.board-column__dot[data-status='todo'] {
+  background: var(--color-status-todo);
+}
+
+.board-column__dot[data-status='doing'] {
+  background: var(--color-status-doing);
+}
+
+.board-column__dot[data-status='done'] {
+  background: var(--color-status-done);
+}
+
+.board-column__list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-1) var(--space-1) var(--space-4);
+  margin: calc(-1 * var(--space-1));
+}
+
+.board-column__empty {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-muted-text);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--size-small);
+}
+
+.task-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-resting);
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+
+.task-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.task-card__title {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.task-card__meta {
+  font-size: var(--size-xs);
+  font-weight: 600;
+  color: var(--color-muted-text);
+}
+
+/* Task detail / add-task / edit-task render into this outlet via nested routes. Their own
+   components already look like cards (see task-form.css, task-detail.css) — this just lifts
+   that card into a centered, backdrop-covered overlay so it reads as a modal, matching the
+   reference board's task dialog instead of an inline page section. */
+.board-outlet:has(> app-task-detail),
+.board-outlet:has(> app-add-task),
+.board-outlet:has(> app-edit-task) {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--space-8);
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.board-outlet:has(> app-task-detail) > app-task-detail,
+.board-outlet:has(> app-add-task) > app-add-task,
+.board-outlet:has(> app-edit-task) > app-edit-task {
+  width: 100%;
+  max-width: 480px;
+  margin: auto 0;
+}
+
+.board-page__content > .page-nav {
+  flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+  .board-page {
+    flex-direction: column;
+    /* Overrides the desktop flex-start (which keeps the sidebar from stretching to the
+       content's height) — in column mode that same value stops the content pane from
+       stretching to the full width and it shrinks to fit the columns instead, pushing them
+       off-screen. */
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 700px) {
+  .board-toolbar {
+    align-items: flex-start;
+  }
+
+  .board-toolbar__controls {
+    width: 100%;
+  }
+
+  .board-toolbar__controls .btn {
+    margin-left: auto;
+  }
+}

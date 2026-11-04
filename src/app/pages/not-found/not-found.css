@@ -1,0 +1,6 @@
+.not-found {
+  max-width: 480px;
+  margin: var(--space-8) auto 0;
+  padding: var(--space-8);
+  text-align: center;
+}

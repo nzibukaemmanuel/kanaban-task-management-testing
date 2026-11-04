@@ -1,0 +1,80 @@
+<div class="board-page">
+  <app-board-sidebar />
+
+  <div class="board-page__content">
+    @if (dataStatus.ready()) {
+      <div class="page-header">
+        <h1>Boards</h1>
+        <p>Select a board to view its details.</p>
+      </div>
+
+      @if (auth.isAuthenticated()) {
+        <form class="new-board" [formGroup]="newBoardForm" (ngSubmit)="createBoard()">
+          <label>
+            New board
+            <input
+              type="text"
+              formControlName="name"
+              placeholder="e.g. Q4 launch"
+              autocomplete="off"
+              [attr.aria-invalid]="
+                newBoardForm.controls.name.invalid && newBoardForm.controls.name.touched
+                  ? true
+                  : null
+              "
+              [attr.aria-describedby]="
+                newBoardForm.controls.name.touched && newBoardForm.controls.name.invalid
+                  ? 'new-board-error'
+                  : null
+              "
+            />
+          </label>
+          <button type="submit" [disabled]="creating()">
+            {{ creating() ? 'Creating…' : 'Add board' }}
+          </button>
+        </form>
+        @if (newBoardForm.controls.name.touched && newBoardForm.controls.name.invalid) {
+          <p class="field-error" role="alert" id="new-board-error">
+            @if (newBoardForm.controls.name.hasError('required')) {
+              Enter a name for the board.
+            } @else if (newBoardForm.controls.name.hasError('maxlength')) {
+              Board names can be at most 40 characters.
+            } @else if (newBoardForm.controls.name.hasError('duplicateBoard')) {
+              A board with that name already exists.
+            } @else {
+              Use at least one letter or number.
+            }
+          </p>
+        }
+      }
+
+      <label class="quick-jump">
+        Quick jump:
+        <app-select-field
+          [options]="boardOptions()"
+          value=""
+          ariaLabel="Quick jump to a board"
+          (valueChange)="jumpToBoard($event)"
+        />
+      </label>
+
+      <ul class="board-list">
+        @for (boardId of boardIds(); track boardId) {
+          <li>
+            <a class="board-card" [routerLink]="['/boards', boardId]">
+              <span class="board-card__name">{{ boardId }}</span>
+              <span class="task-count-badge">{{ taskCount$(boardId) | async }} tasks</span>
+              <span class="board-card__arrow" aria-hidden="true">&rarr;</span>
+            </a>
+          </li>
+        }
+      </ul>
+    } @else {
+      <app-data-state
+        [error]="dataStatus.error()"
+        loadingLabel="Loading boards…"
+        (retry)="dataStatus.retry()"
+      />
+    }
+  </div>
+</div>

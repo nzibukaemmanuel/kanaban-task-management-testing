@@ -1,0 +1,40 @@
+<header class="app-header">
+  <span class="app-title">Kanban</span>
+  <nav class="app-nav">
+    <a routerLink="/boards" routerLinkActive="active">Boards</a>
+    <a routerLink="/settings" routerLinkActive="active">Settings</a>
+    <a [routerLink]="[{ outlets: { aux: ['tips'] } }]">Tips</a>
+    @if (auth.isAuthenticated()) {
+      <button type="button" class="link-button" (click)="logout()">Log out</button>
+    } @else {
+      <a routerLink="/login">Log in</a>
+    }
+    <button
+      type="button"
+      class="theme-toggle"
+      (click)="themeService.toggle()"
+      [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'"
+    >
+      {{ themeService.theme() === 'dark' ? '☀️ Light' : '🌙 Dark' }}
+    </button>
+  </nav>
+</header>
+
+@if (isNavigating()) {
+  <div class="nav-progress" role="status" aria-label="Loading page"></div>
+}
+
+@if (navigationError()) {
+  <div class="banner" data-kind="error" role="alert">
+    <span>{{ navigationError() }}</span>
+    <button type="button" (click)="dismissError()">Dismiss</button>
+  </div>
+}
+
+<app-notice />
+
+<router-outlet name="aux" />
+
+<main class="app-main">
+  <router-outlet />
+</main>

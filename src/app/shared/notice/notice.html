@@ -1,0 +1,6 @@
+@if (notificationService.notice(); as notice) {
+  <div class="banner" [attr.data-kind]="notice.kind" [attr.role]="notice.kind === 'error' ? 'alert' : 'status'">
+    <span>{{ notice.message }}</span>
+    <button type="button" (click)="dismiss()">Dismiss</button>
+  </div>
+}

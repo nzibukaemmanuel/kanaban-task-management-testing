@@ -1,0 +1,113 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.board-page {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-8);
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.board-page__content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.page-header {
+  flex-shrink: 0;
+  margin-bottom: var(--space-8);
+}
+
+.quick-jump {
+  flex-shrink: 0;
+  margin-bottom: var(--space-8);
+}
+
+.new-board {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.board-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  align-content: start;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-6);
+  padding-bottom: var(--space-2);
+}
+
+.board-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  height: 100%;
+  padding: var(--space-8);
+  background: var(--color-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-resting);
+  transition:
+    box-shadow var(--transition-base),
+    transform var(--transition-base);
+}
+
+.board-card:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.board-card:active {
+  transform: translateY(0);
+}
+
+.board-card__name {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: var(--color-text);
+  text-transform: capitalize;
+}
+
+.task-count-badge {
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  font-size: var(--size-xs);
+  font-weight: 600;
+  color: var(--color-muted-text);
+}
+
+.board-card__arrow {
+  color: var(--color-primary);
+  font-size: 1.25rem;
+  transition: transform var(--transition-fast);
+}
+
+.board-card:hover .board-card__arrow {
+  transform: translateX(4px);
+}
+
+@media (max-width: 900px) {
+  .board-page {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

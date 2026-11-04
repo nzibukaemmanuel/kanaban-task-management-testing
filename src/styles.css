@@ -1,0 +1,424 @@
+/* You can add global styles to this file, and also import other style files */
+
+:root {
+  /* Reflects the active theme so native controls (the <select> popup, scrollbars) render in
+     the matching scheme instead of clashing with the palette below — ThemeService sets
+     data-theme, this just mirrors it for the browser's own chrome. */
+  color-scheme: light;
+
+  /* Palette — carried over from the FEM_09 Dessert Shop app's design system */
+  --color-bg: #f9f9f9;
+  --color-card: #fff8f0;
+  --color-card-hover: #fdf1e2;
+  --color-accent-section: #fff0f0;
+  --color-dark: #3c2415;
+  --color-text: #1a2a3d;
+  --color-text-secondary: #2c3e50;
+  --color-primary: #b74700;
+  --color-primary-hover: #9c3d00;
+  --color-secondary: #8f5a30;
+  --color-white: #ffffff;
+  /* Raised-surface color for inputs/secondary buttons/dropdowns — distinct from --color-white
+     (literal white, used for text sitting on a saturated background) so dark mode can recolor
+     surfaces without also recoloring that text. */
+  --color-surface: #ffffff;
+  --color-muted-decorative: #a9a9a9;
+  --color-muted-text: #6b6b6b;
+  --color-border: #ece3d6;
+
+  /* Status colors — the source palette has no status set, so these are minimal
+     additions in the same warm/earthy register, chosen for 4.5:1 contrast against
+     white badge text. */
+  --color-status-todo: #6b6b6b;
+  --color-status-doing: #b74700;
+  --color-status-done: #2f6f4e;
+  --color-status-error-bg: #fee2e2;
+  --color-status-error-text: #991b1b;
+  --color-status-success-bg: #dcfce7;
+  --color-status-success-text: #166534;
+  --color-status-warning-bg: #fdecd1;
+  --color-status-warning-text: #92400e;
+
+  /* Type scale */
+  --font-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+  --size-h1: 3rem;
+  --size-h2: 2rem;
+  --size-h3: 1.5rem;
+  --size-body: 1rem;
+  --size-small: 0.875rem;
+  --size-xs: 0.75rem;
+
+  /* Shape & elevation */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  --shadow-resting: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --transition-fast: 0.2s ease;
+  --transition-base: 0.3s ease;
+
+  /* Spacing */
+  --space-1: 6px;
+  --space-2: 8px;
+  --space-3: 10px;
+  --space-4: 12px;
+  --space-6: 16px;
+  --space-8: 20px;
+
+  /* Layout — wide enough for the boards sidebar plus three task columns side by side
+     before the column strip needs to scroll horizontally. */
+  --content-max-width: 1200px;
+}
+
+/* Dark theme — ThemeService stamps data-theme="dark"/"light" on <html> based on the user's
+   saved choice (or their OS preference, the first time). Only colors change; type scale,
+   spacing, shape and shadows stay the same tokens as light mode. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg: #15110d;
+  --color-card: #221a13;
+  --color-card-hover: #2b2118;
+  --color-accent-section: #2e1e1e;
+  --color-dark: #f3ece1;
+  --color-text: #f3ece1;
+  --color-text-secondary: #cfc3b3;
+  --color-primary: #d9601a;
+  --color-primary-hover: #e97a34;
+  --color-secondary: #d3a373;
+  --color-surface: #1c150f;
+  --color-muted-decorative: #5c5346;
+  --color-muted-text: #a99d8c;
+  --color-border: #3a2e21;
+
+  --color-status-todo: #9c9c9c;
+  --color-status-doing: #d9601a;
+  --color-status-done: #4fbf88;
+  --color-status-error-bg: #451515;
+  --color-status-error-text: #ff9a9a;
+  --color-status-success-bg: #10321f;
+  --color-status-success-text: #7ce0a8;
+  --color-status-warning-bg: #3c2a10;
+  --color-status-warning-text: #ffcf8a;
+
+  /* Black shadows barely register on an already-dark page — darker/stronger ones read as
+     "elevated" the same way the light theme's subtle ones do on a light page. */
+  --shadow-resting: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.55);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  font-size: var(--size-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Lets the routed page (whatever <router-outlet> renders inside .app-main) size itself to the
+   full height .app-main has available, rather than only its natural content height — the board
+   view uses this to fit sidebar + columns in one screen instead of scrolling the whole page.
+   Global (not app.component-scoped) because the routed component isn't part of AppComponent's
+   own template output. */
+.app-main > router-outlet + * {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  color: var(--color-text);
+  margin: 0 0 var(--space-4);
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+h1 {
+  font-size: var(--size-h1);
+}
+
+h2 {
+  font-size: var(--size-h2);
+}
+
+h3 {
+  font-size: var(--size-h3);
+}
+
+p {
+  margin: 0 0 var(--space-6);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Buttons */
+button,
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-8);
+  font-family: var(--font-sans);
+  font-size: var(--size-small);
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--color-primary);
+  color: var(--color-white);
+  transition: background-color var(--transition-fast), transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+button:hover,
+.btn:hover {
+  background: var(--color-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+button:active,
+.btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+button:disabled,
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-resting);
+}
+
+.btn-secondary:hover {
+  background: var(--color-card-hover);
+  color: var(--color-primary);
+}
+
+/* Low-emphasis nav buttons ("back to ...") — kept visually lighter than the
+   primary/secondary action buttons they share a page with. */
+.btn-tertiary {
+  background: transparent;
+  color: var(--color-text-secondary);
+  box-shadow: none;
+  padding: var(--space-2) var(--space-3);
+}
+
+button.btn-tertiary:hover {
+  background: var(--color-card-hover);
+  color: var(--color-primary);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Shared footer row for page-level "back" navigation, separated from the
+   content above by a hairline so it reads as a distinct nav band. */
+.page-nav {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+
+/* Focus visibility — required everywhere, including custom components */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+
+/* Form controls */
+label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--size-small);
+  font-weight: 600;
+  color: var(--color-text);
+  max-width: 320px;
+}
+
+input[type='text'],
+input[type='password'],
+input[type='date'],
+textarea {
+  font: inherit;
+  font-size: var(--size-small);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 5em;
+}
+
+input[type='text']:hover,
+input[type='password']:hover,
+input[type='date']:hover,
+textarea:hover {
+  border-color: var(--color-muted-decorative);
+}
+
+input[type='text']:disabled,
+input[type='password']:disabled,
+input[type='date']:disabled,
+textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Paired with the field's own error text + aria-invalid, never the only signal something's wrong. */
+input[type='text'][aria-invalid='true'],
+input[type='password'][aria-invalid='true'],
+input[type='date'][aria-invalid='true'],
+textarea[aria-invalid='true'],
+.select-trigger[aria-invalid='true'] {
+  border-color: var(--color-status-error-text);
+}
+
+input[type='text'][aria-invalid='true']:focus-visible,
+input[type='password'][aria-invalid='true']:focus-visible,
+input[type='date'][aria-invalid='true']:focus-visible,
+textarea[aria-invalid='true']:focus-visible,
+.select-trigger[aria-invalid='true']:focus-visible {
+  outline-color: var(--color-status-error-text);
+}
+
+/* Lists reset — component styles opt back into markers where needed */
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Status badge — shared across board/task views */
+.status-badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-pill);
+  font-size: var(--size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-white);
+}
+
+.status-badge[data-status='todo'] {
+  background: var(--color-status-todo);
+}
+
+.status-badge[data-status='doing'] {
+  background: var(--color-status-doing);
+}
+
+.status-badge[data-status='done'] {
+  background: var(--color-status-done);
+}
+
+/* Shared form feedback — used by any routed form (Settings, task forms, ...) */
+.unsaved-hint {
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-status-warning-bg);
+  color: var(--color-status-warning-text);
+  font-size: var(--size-small);
+  font-weight: 600;
+}
+
+.field-error {
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-status-error-bg);
+  color: var(--color-status-error-text);
+  font-size: var(--size-small);
+  font-weight: 600;
+}
+
+/* Full-width dismissible banner — the app's one shared shape for "something happened, here's
+   the outcome" (navigation failures, task save confirmations, ...). */
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding: var(--space-4) var(--space-8);
+}
+
+.banner[data-kind='error'] {
+  background: var(--color-status-error-bg);
+  color: var(--color-status-error-text);
+}
+
+.banner[data-kind='success'] {
+  background: var(--color-status-success-bg);
+  color: var(--color-status-success-text);
+}
+
+.banner button {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-weight: 700;
+  padding: var(--space-1) var(--space-3);
+  box-shadow: none;
+}
+
+.banner button:hover {
+  background: rgba(0, 0, 0, 0.08);
+  transform: none;
+  box-shadow: none;
+}
+
+.empty-state {
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--color-muted-text);
+  background: var(--color-card);
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 700px) {
+  :root {
+    --size-h1: 2.25rem;
+    --size-h2: 1.5rem;
+    --size-h3: 1.25rem;
+  }
+}

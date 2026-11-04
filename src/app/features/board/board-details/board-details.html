@@ -1,0 +1,95 @@
+@if (!dataStatus.ready()) {
+  <app-data-state
+    [error]="dataStatus.error()"
+    loadingLabel="Loading board…"
+    (retry)="dataStatus.retry()"
+  />
+} @else if (boardExists()) {
+  <div class="board-page">
+    <app-board-sidebar />
+
+    <div class="board-page__content">
+      <div class="board-toolbar">
+        <div class="board-toolbar__heading">
+          <h1>{{ boardId() }}</h1>
+        </div>
+
+        <div class="board-toolbar__controls">
+          <label>
+            Status:
+            <app-select-field
+              [options]="statusOptions"
+              [value]="effectiveStatus()"
+              ariaLabel="Filter by status"
+              (valueChange)="updateQueryParams({ status: $event })"
+            />
+          </label>
+
+          <label>
+            Sort by:
+            <app-select-field
+              [options]="sortOptions"
+              [value]="effectiveSort()"
+              ariaLabel="Sort by"
+              (valueChange)="updateQueryParams({ sort: $event })"
+            />
+          </label>
+
+          <a class="btn" [routerLink]="['new-task']">+ Add New Task</a>
+          <button
+            type="button"
+            class="btn-secondary"
+            [disabled]="deletingBoard()"
+            (click)="deleteBoard()"
+          >
+            {{ deletingBoard() ? 'Deleting…' : 'Delete board' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="board-columns">
+        @for (column of columns(); track column.status) {
+          <section class="board-column" [attr.aria-label]="column.label + ' tasks'">
+            <h2 class="board-column__heading">
+              <span
+                class="board-column__dot"
+                [attr.data-status]="column.status"
+                aria-hidden="true"
+              ></span>
+              {{ column.label }} ({{ column.tasks.length }})
+            </h2>
+
+            <ul class="board-column__list">
+              @for (task of column.tasks; track task.id) {
+                <li>
+                  <a class="task-card" [routerLink]="['tasks', task.id]">
+                    <span class="task-card__title">{{ task.title }}</span>
+                    @if (task.subtasks.length > 0) {
+                      <span class="task-card__meta">
+                        {{ completedSubtaskCount(task) }} of {{ task.subtasks.length }} subtasks
+                      </span>
+                    }
+                  </a>
+                </li>
+              } @empty {
+                <li class="board-column__empty">No tasks</li>
+              }
+            </ul>
+          </section>
+        } @empty {
+          <p class="empty-state">No tasks match the current filter.</p>
+        }
+      </div>
+
+      <div class="board-outlet">
+        <router-outlet />
+      </div>
+
+      <div class="page-nav">
+        <button type="button" class="btn-tertiary" (click)="goBack()">&larr; Back to boards</button>
+      </div>
+    </div>
+  </div>
+} @else {
+  <app-not-found />
+}
