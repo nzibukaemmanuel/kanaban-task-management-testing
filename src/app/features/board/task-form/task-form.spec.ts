@@ -562,4 +562,27 @@ describe('TaskForm', () => {
       expect(emitted[0].subtasks.map((subtask) => subtask.id)).toEqual(['s1']);
     });
   });
+
+  it('moves focus to the description when it is the only invalid field', () => {
+    setTitle('Valid title');
+    pickStatus(1);
+    descriptionInput().value = 'x'.repeat(501);
+    descriptionInput().dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    submitForm();
+
+    expect(document.activeElement).toBe(descriptionInput());
+  });
+
+  it('puts the title before the description when both are invalid', () => {
+    pickStatus(1);
+    descriptionInput().value = 'x'.repeat(501);
+    descriptionInput().dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    submitForm();
+
+    expect(document.activeElement).toBe(titleInput());
+  });
 });

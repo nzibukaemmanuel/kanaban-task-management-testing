@@ -321,3 +321,25 @@ describe('TaskDetail — template', () => {
     expect(text(el().querySelector('h2'))).toBe('Prioritize features');
   });
 });
+
+describe('TaskDetail — deleting when there is no task to delete', () => {
+  it('does not prompt, dispatch or navigate', async () => {
+    TestBed.configureTestingModule({
+      imports: [TaskDetail],
+      providers: [provideRouter([]), provideTaskStoreForTests()],
+    });
+    const fixture = TestBed.createComponent(TaskDetail);
+    fixture.componentRef.setInput('boardId', 'roadmap');
+    fixture.componentRef.setInput('taskId', 'ghost');
+    await fixture.whenStable();
+    const confirmSpy = jest.spyOn(window, 'confirm');
+    const dispatchSpy = jest.spyOn(TestBed.inject(Store), 'dispatch');
+    const navigateSpy = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+
+    fixture.componentInstance.deleteTask();
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(dispatchSpy).not.toHaveBeenCalled();
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+});

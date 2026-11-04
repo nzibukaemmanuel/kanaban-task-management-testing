@@ -98,3 +98,15 @@ describe('AddTask', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/boards', 'roadmap']);
   });
 });
+
+describe('AddTask — before its view has rendered', () => {
+  it('reports no unsaved changes while the form does not exist yet', () => {
+    TestBed.configureTestingModule({
+      imports: [AddTask],
+      providers: [provideRouter([]), provideTaskStoreForTests()],
+    });
+    const fixture = TestBed.createComponent(AddTask);
+
+    expect(fixture.componentInstance.hasUnsavedChanges()).toBe(false);
+  });
+});

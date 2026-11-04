@@ -31,4 +31,34 @@ describe('describeHttpError', () => {
       "Couldn't load tasks. Something unexpected went wrong.",
     );
   });
+
+  it.each([400, 409, 422])('uses a generic "rejected" message for a %i without a server message', (status) => {
+    expect(describeHttpError(failure(status), 'save the task')).toBe(
+      "Couldn't save the task. The server rejected the request.",
+    );
+  });
+
+  it('reports the status code for an unexpected one with no server message', () => {
+    expect(describeHttpError(failure(418), 'brew')).toBe("Couldn't brew. Unexpected response (418).");
+  });
+
+  it('still prefers the server message for an unexpected status', () => {
+    expect(describeHttpError(failure(418, { message: "I'm a teapot." }), 'brew')).toBe("I'm a teapot.");
+  });
+
+  it('prefers the server message for a 404 too', () => {
+    expect(describeHttpError(failure(404, { message: 'Task "x" doesn\'t exist.' }), 'load')).toBe(
+      'Task "x" doesn\'t exist.',
+    );
+  });
+
+  it('ignores a server message that is not a string', () => {
+    expect(describeHttpError(failure(409, { message: 42 }), 'save')).toContain('rejected the request');
+  });
+
+  it('never leaks a server message for a 5xx', () => {
+    expect(describeHttpError(failure(503, { message: 'db password is hunter2' }), 'load')).not.toContain(
+      'hunter2',
+    );
+  });
 });

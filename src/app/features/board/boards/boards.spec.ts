@@ -201,4 +201,22 @@ describe('Boards — creating a board', () => {
     expect(component.creating()).toBe(false);
     expect(component.newBoardForm.controls.name.value).toBe('Fresh board');
   });
+
+  it('treats a null name like an empty one: required, not a usable-name or duplicate error', () => {
+    const name = component.newBoardForm.controls.name;
+
+    name.setValue(null as unknown as string);
+
+    expect(name.hasError('required')).toBe(true);
+    expect(name.hasError('unusableName')).toBe(false);
+    expect(name.hasError('duplicateBoard')).toBe(false);
+  });
+
+  it('accepts a name that slugs to a board id nobody has used yet', () => {
+    const name = component.newBoardForm.controls.name;
+
+    name.setValue('Brand New Board');
+
+    expect(name.valid).toBe(true);
+  });
 });

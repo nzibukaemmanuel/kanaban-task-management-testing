@@ -408,3 +408,54 @@ describe('BoardDetails — template', () => {
     expect(el().querySelector('.board-page')).toBeNull();
   });
 });
+
+describe('BoardDetails — delete confirmation wording and guard', () => {
+  let component: BoardDetails;
+
+  async function open(boardId: string) {
+    TestBed.configureTestingModule({
+      imports: [BoardDetails],
+      providers: [provideRouter([]), provideTaskStoreForTests()],
+    });
+    const fixture = TestBed.createComponent(BoardDetails);
+    component = fixture.componentInstance;
+    fixture.componentRef.setInput('boardId', boardId);
+    await loadBoardsForTests();
+  }
+
+  it('names no tasks when the board is empty', async () => {
+    await open('roadmap');
+    TestBed.inject(Store).dispatch(TaskActions.boardRemoved({ boardId: 'roadmap' }));
+    const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(false);
+
+    component.deleteBoard();
+
+    expect(confirmSpy).toHaveBeenCalledWith('Delete the board "roadmap"? This can\'t be undone.');
+  });
+
+  it('uses the singular for a board with exactly one task', async () => {
+    await open('roadmap');
+    const store = TestBed.inject(Store);
+    for (const taskId of ['prioritize-features', 'q2-goals', 'review-roadmap-risks']) {
+      store.dispatch(TaskActions.deleteTaskSuccess({ taskId }));
+    }
+    const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(false);
+
+    component.deleteBoard();
+
+    expect(confirmSpy).toHaveBeenCalledWith(expect.stringContaining('and its 1 task?'));
+  });
+
+  it('ignores a second delete request while the first is still in flight', async () => {
+    await open('roadmap');
+    const pending = new Subject<void>();
+    const deleteSpy = jest.spyOn(TestBed.inject(BoardService), 'delete').mockReturnValue(pending);
+    const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true);
+
+    component.deleteBoard();
+    component.deleteBoard();
+
+    expect(confirmSpy).toHaveBeenCalledTimes(1);
+    expect(deleteSpy).toHaveBeenCalledTimes(1);
+  });
+});
