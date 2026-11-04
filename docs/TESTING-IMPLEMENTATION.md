@@ -379,8 +379,10 @@ look at the coverage report for the files you touched; run `npm run test:ci` bef
 `npm run build`. Older runs for the same branch are cancelled when a newer push arrives. It uses Node 24 because the
 Angular CLI 22 requires `^22.22.3 || ^24.15.0`. In practice this means a change that breaks a test, drops coverage
 below its floor, or breaks the production build cannot be merged unnoticed, and refactoring is cheap because a
-regression is reported minutes after it is introduced, on a clean machine. The same pipeline is the natural gate in
-front of the existing Netlify/Render deploys.
+regression is reported minutes after it is introduced, on a clean machine. The same pipeline is the gate in front of the
+**Vercel** deployment: with branch protection requiring the CI check, nothing reaches `main` (and so production)
+unless the tests, the coverage floors and the build all pass. Vercel itself only builds the app; it does not run
+the tests.
 
 ---
 
@@ -443,6 +445,8 @@ Writing tests surfaced real defects and one dead branch:
   `npm run test:ci`, `ng build`), but the first real run is the proof.
 - **Coverage is below 100% on purpose** (see Task 8). The misses are unreachable `??` fallbacks and the dead branch
   above.
+- **Deployment is configured but was not performed from this environment.** `vercel.json` and `engines.node` are in
+  place and the build output path was verified locally, but importing the repo into Vercel needs the owner's account.
 - **The in-memory API is a test double.** It reproduces the REST behaviour the app depends on (validation, 404/409,
   cascade on board delete) but is not the json-server the app talks to in production; the HTTP layer is covered
   separately with `HttpTestingController`.
@@ -500,6 +504,7 @@ src/app/features/board/board-sidebar/board-sidebar.spec.ts   new
 src/app/core/api/testing/mock-api.db.spec.ts       new
 src/app/app.config.spec.ts                         bootstrap smoke test
 docs/TESTING-IMPLEMENTATION.md         this report
+vercel.json                            Vercel build/output/SPA-rewrite config; package.json `engines.node` = 24.x
 ```
 
 ### Commit history of the lab

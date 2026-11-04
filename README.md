@@ -189,10 +189,22 @@ Success`, etc.) and the resulting state diff in real time.
 
 ### Deployment
 
-`netlify.toml` builds with `npm run build` and publishes `dist/Kanban-Task-Management-Web-App/browser`
-with a SPA catch-all redirect. Deploying needs a Netlify (or Vercel) account connected to this repo —
-run `netlify deploy --prod` (or push through the connected Git integration) from an authenticated
-session.
+The app is deployed on **Vercel**. `vercel.json` tells Vercel how: install with `npm ci`, build with
+`npm run build`, publish `dist/Kanban-Task-Management-Web-App/browser`, rewrite every path to `index.html` (so a
+refresh on `/boards/roadmap` works in this single-page app), and cache the content-hashed JS/CSS forever.
+`package.json` pins `engines.node` to `24.x` because Angular CLI 22 does not run on older Node versions.
+
+To deploy: in Vercel choose **Add New → Project**, import this GitHub repository, and accept the settings it reads
+from `vercel.json` (no environment variables are needed). Every push to `main` then deploys to production and every
+pull request gets a preview URL. Alternatively, from an authenticated terminal: `npx vercel --prod`.
+
+- **The API is separate.** Vercel hosts only the static app. The API (json-server) is hosted on Render — see
+  [Deploying the API](#deploying-the-api) — and its URL is compiled into the bundle from
+  `src/environments/environment.prod.ts`, so changing it needs a new deployment.
+- **Tests come first.** Let GitHub Actions (`.github/workflows/ci.yml`) be the gate: in the repository's branch
+  protection require the **CI** check to pass before merging to `main`, so a push that breaks a test, the coverage
+  floor or the build never reaches production. Vercel builds only compile the app; they do not run the tests.
+- `netlify.toml` is left in place as an alternative host and is not used by Vercel.
 
 ## Development server
 
@@ -403,7 +415,7 @@ For more information on using the Angular CLI, including detailed command refere
 
 ## Deploying the API
 
-The production build needs a hosted API (a static host like Netlify serves no `/api`). `render.yaml` is a Render
+The production build needs a hosted API (a static host like Vercel or Netlify serves no `/api`). `render.yaml` is a Render
 Blueprint that runs json-server on `server/db.json`:
 
 1. Push the repo, then in Render choose **New → Blueprint** and select it; note the service URL.
