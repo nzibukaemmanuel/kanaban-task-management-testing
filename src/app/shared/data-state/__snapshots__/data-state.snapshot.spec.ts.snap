@@ -1,0 +1,61 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`DataState (snapshots) renders a custom loading label 1`] = `
+<div>
+  
+  <div
+    aria-live="polite"
+    class="data-state"
+    role="status"
+  >
+    <span
+      aria-hidden="true"
+      class="data-state__spinner"
+    />
+    <p>
+      Loading board…
+    </p>
+  </div>
+  
+</div>
+`;
+
+exports[`DataState (snapshots) renders the error state with its retry button 1`] = `
+<div>
+  <div
+    class="data-state data-state--error"
+    role="alert"
+  >
+    <p>
+      Couldn't load boards. The server ran into a problem.
+    </p>
+    <button
+      type="button"
+    >
+      Try again
+    </button>
+  </div>
+  
+  
+</div>
+`;
+
+exports[`DataState (snapshots) renders the loading state 1`] = `
+<div>
+  
+  <div
+    aria-live="polite"
+    class="data-state"
+    role="status"
+  >
+    <span
+      aria-hidden="true"
+      class="data-state__spinner"
+    />
+    <p>
+      Loading…
+    </p>
+  </div>
+  
+</div>
+`;

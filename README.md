@@ -231,7 +231,7 @@ This will compile your project and store the build artifacts in the `dist/` dire
 ## Testing
 
 The app is tested with [Jest](https://jestjs.io/) and [`jest-preset-angular`](https://thymikee.github.io/jest-preset-angular/)
-(zoneless setup, jsdom). At the time of writing: **46 suites, 589 tests, ~99.7% statement coverage**.
+(zoneless setup, jsdom). At the time of writing: **51 suites, 603 tests, ~99.7% statement coverage**.
 
 ### Running the tests
 
@@ -283,6 +283,7 @@ Specs sit **next to the file they test**: `foo.ts` → `foo.spec.ts`. The suffix
 | --- | --- | --- |
 | `foo.spec.ts` | Unit / component | The unit under test is real. Dependencies are either real-but-cheap (the store with the in-memory API) or `jest.spyOn`-ed. |
 | `foo.isolated.spec.ts` | Component in isolation | **Every** injected service is a Jest mock (`Store`, `Actions`, `Router`, `NotificationService`, …). Nothing else can make it fail. |
+| `foo.snapshot.spec.ts` | Snapshot | A small presentational component rendered with real inputs; its DOM is compared with the committed `__snapshots__/` file. |
 | `foo.integration.spec.ts` | Integration | Real router config, real store and effects, real services, in-memory API. Driven through the UI. |
 
 Test names are sentences that state the behaviour (`'keeps the board and its tasks and shows the error when the
@@ -308,6 +309,23 @@ fixtures). These are excluded from the production build and from coverage.
 - **Integration** — `board-flow.integration.spec.ts` (list, sidebar, columns, task detail, edit/delete, board
   create/delete, query params, login redirect, retry) and `app-shell.integration.spec.ts` (theme, auth, notices and
   preferences shared through the app shell).
+
+### Snapshot tests
+
+`*.snapshot.spec.ts` files render a presentational component and compare its DOM with a stored snapshot
+(`__snapshots__/*.snap`, committed next to the spec). They guard the **structure** of the UI (roles, live regions,
+classes, which elements appear in which state) so an unintended change during a refactor shows up as a diff in
+the pull request. They cover `DataState`, `Notice`, `BoardSidebar`, `TaskDetail` and the columns of `BoardDetails`.
+
+- The Angular serializers from `jest-preset-angular` strip `ng-reflect-*`, `_ngcontent-*` and comment nodes, so
+  snapshots only change when the markup does.
+- Snapshot **components, not pages**, and avoid anything with generated ids (`SelectField` ids depend on how many
+  were created before it) so a snapshot never depends on test order. They also pass under `jest --randomize`.
+- **A changed snapshot is a question, not a chore.** If the change is intended, review the diff and run
+  `npx jest -u <spec>`; if not, you just caught a regression. Never run `jest -u` across the whole suite to make a
+  red run green.
+- In CI (`--ci`) a *missing* snapshot fails the run instead of being written silently, so new `.snap` files must be
+  committed.
 
 ### Mocking
 

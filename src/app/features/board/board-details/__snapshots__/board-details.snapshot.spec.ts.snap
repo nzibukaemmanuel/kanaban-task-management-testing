@@ -1,0 +1,324 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`BoardDetails columns (snapshots) renders a single column when a status filter is set 1`] = `
+<div
+  class="board-columns"
+>
+  <section
+    aria-label="Doing tasks"
+    class="board-column"
+  >
+    <h2
+      class="board-column__heading"
+    >
+      <span
+        aria-hidden="true"
+        class="board-column__dot"
+        data-status="doing"
+      />
+       Doing (2) 
+    </h2>
+    <ul
+      class="board-column__list"
+    >
+      <li>
+        <a
+          class="task-card"
+          href="/tasks/design-review"
+        >
+          <span
+            class="task-card__title"
+          >
+            Design review
+          </span>
+          <span
+            class="task-card__meta"
+          >
+             1 of 3 subtasks 
+          </span>
+          
+        </a>
+      </li>
+      <li>
+        <a
+          class="task-card"
+          href="/tasks/beta-testing"
+        >
+          <span
+            class="task-card__title"
+          >
+            Run beta testing
+          </span>
+          <span
+            class="task-card__meta"
+          >
+             2 of 3 subtasks 
+          </span>
+          
+        </a>
+      </li>
+      
+      
+    </ul>
+  </section>
+  
+  
+</div>
+`;
+
+exports[`BoardDetails columns (snapshots) renders all three columns of a populated board 1`] = `
+<div
+  class="board-columns"
+>
+  <section
+    aria-label="Todo tasks"
+    class="board-column"
+  >
+    <h2
+      class="board-column__heading"
+    >
+      <span
+        aria-hidden="true"
+        class="board-column__dot"
+        data-status="todo"
+      />
+       Todo (3) 
+    </h2>
+    <ul
+      class="board-column__list"
+    >
+      <li>
+        <a
+          class="task-card"
+          href="/tasks/press-kit"
+        >
+          <span
+            class="task-card__title"
+          >
+            Prepare press kit
+          </span>
+          
+        </a>
+      </li>
+      <li>
+        <a
+          class="task-card"
+          href="/tasks/qa-signoff"
+        >
+          <span
+            class="task-card__title"
+          >
+            QA sign-off
+          </span>
+          <span
+            class="task-card__meta"
+          >
+             0 of 2 subtasks 
+          </span>
+          
+        </a>
+      </li>
+      <li>
+        <a
+          class="task-card"
+          href="/tasks/write-docs"
+        >
+          <span
+            class="task-card__title"
+          >
+            Write launch docs
+          </span>
+          
+        </a>
+      </li>
+      
+      
+    </ul>
+  </section>
+  <section
+    aria-label="Doing tasks"
+    class="board-column"
+  >
+    <h2
+      class="board-column__heading"
+    >
+      <span
+        aria-hidden="true"
+        class="board-column__dot"
+        data-status="doing"
+      />
+       Doing (2) 
+    </h2>
+    <ul
+      class="board-column__list"
+    >
+      <li>
+        <a
+          class="task-card"
+          href="/tasks/design-review"
+        >
+          <span
+            class="task-card__title"
+          >
+            Design review
+          </span>
+          <span
+            class="task-card__meta"
+          >
+             1 of 3 subtasks 
+          </span>
+          
+        </a>
+      </li>
+      <li>
+        <a
+          class="task-card"
+          href="/tasks/beta-testing"
+        >
+          <span
+            class="task-card__title"
+          >
+            Run beta testing
+          </span>
+          <span
+            class="task-card__meta"
+          >
+             2 of 3 subtasks 
+          </span>
+          
+        </a>
+      </li>
+      
+      
+    </ul>
+  </section>
+  <section
+    aria-label="Done tasks"
+    class="board-column"
+  >
+    <h2
+      class="board-column__heading"
+    >
+      <span
+        aria-hidden="true"
+        class="board-column__dot"
+        data-status="done"
+      />
+       Done (1) 
+    </h2>
+    <ul
+      class="board-column__list"
+    >
+      <li>
+        <a
+          class="task-card"
+          href="/tasks/define-scope"
+        >
+          <span
+            class="task-card__title"
+          >
+            Define MVP scope
+          </span>
+          <span
+            class="task-card__meta"
+          >
+             3 of 3 subtasks 
+          </span>
+          
+        </a>
+      </li>
+      
+      
+    </ul>
+  </section>
+  
+  
+</div>
+`;
+
+exports[`BoardDetails columns (snapshots) renders three empty columns for a board with no tasks 1`] = `
+<div
+  class="board-columns"
+>
+  <section
+    aria-label="Todo tasks"
+    class="board-column"
+  >
+    <h2
+      class="board-column__heading"
+    >
+      <span
+        aria-hidden="true"
+        class="board-column__dot"
+        data-status="todo"
+      />
+       Todo (0) 
+    </h2>
+    <ul
+      class="board-column__list"
+    >
+      
+      <li
+        class="board-column__empty"
+      >
+        No tasks
+      </li>
+      
+    </ul>
+  </section>
+  <section
+    aria-label="Doing tasks"
+    class="board-column"
+  >
+    <h2
+      class="board-column__heading"
+    >
+      <span
+        aria-hidden="true"
+        class="board-column__dot"
+        data-status="doing"
+      />
+       Doing (0) 
+    </h2>
+    <ul
+      class="board-column__list"
+    >
+      
+      <li
+        class="board-column__empty"
+      >
+        No tasks
+      </li>
+      
+    </ul>
+  </section>
+  <section
+    aria-label="Done tasks"
+    class="board-column"
+  >
+    <h2
+      class="board-column__heading"
+    >
+      <span
+        aria-hidden="true"
+        class="board-column__dot"
+        data-status="done"
+      />
+       Done (0) 
+    </h2>
+    <ul
+      class="board-column__list"
+    >
+      
+      <li
+        class="board-column__empty"
+      >
+        No tasks
+      </li>
+      
+    </ul>
+  </section>
+  
+  
+</div>
+`;

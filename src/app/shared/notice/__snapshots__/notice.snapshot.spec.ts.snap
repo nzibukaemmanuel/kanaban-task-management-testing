@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Notice (snapshots) renders a success notice as a polite status 1`] = `
+<div>
+  <div
+    class="banner"
+    data-kind="success"
+    role="status"
+  >
+    <span>
+      Task added.
+    </span>
+    <button
+      type="button"
+    >
+      Dismiss
+    </button>
+  </div>
+  
+</div>
+`;
+
+exports[`Notice (snapshots) renders an error notice as an alert 1`] = `
+<div>
+  <div
+    class="banner"
+    data-kind="error"
+    role="alert"
+  >
+    <span>
+      Couldn't save the task.
+    </span>
+    <button
+      type="button"
+    >
+      Dismiss
+    </button>
+  </div>
+  
+</div>
+`;
+
+exports[`Notice (snapshots) renders nothing when there is no notice 1`] = `
+<div>
+  
+</div>
+`;

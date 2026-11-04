@@ -1,0 +1,167 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`TaskDetail (snapshots) renders a bare task: no description, due date or subtasks 1`] = `
+<div>
+  <div
+    class="task-detail-card"
+  >
+    <div
+      class="task-detail-card__header"
+    >
+      <h2>
+        Set Q1 goals
+      </h2>
+      <span
+        class="status-badge"
+        data-status="done"
+      >
+        Done
+      </span>
+    </div>
+    
+    
+    
+  </div>
+  <div
+    class="task-detail-card__actions"
+  >
+    <a
+      class="btn"
+      href="/edit"
+    >
+      Edit task
+    </a>
+    <button
+      class="btn-secondary"
+      type="button"
+    >
+       Delete task 
+    </button>
+    <button
+      class="btn-tertiary"
+      type="button"
+    >
+      ← Back to board
+    </button>
+  </div>
+  
+  
+</div>
+`;
+
+exports[`TaskDetail (snapshots) renders a task with a description, due date and subtasks 1`] = `
+<div>
+  <div
+    class="task-detail-card"
+  >
+    <div
+      class="task-detail-card__header"
+    >
+      <h2>
+        Set Q1 goals
+      </h2>
+      <span
+        class="status-badge"
+        data-status="doing"
+      >
+        In progress
+      </span>
+    </div>
+    <p
+      class="task-detail-card__description"
+    >
+      Set and align on Q1 OKRs across teams.
+    </p>
+    
+    <p
+      class="task-detail-card__due-date"
+    >
+      Due Sep 15, 2026
+    </p>
+    
+    <div
+      class="task-detail-card__subtasks"
+    >
+      <p
+        class="task-detail-card__subtasks-summary"
+      >
+         Subtasks (1/2) 
+      </p>
+      <ul
+        class="task-detail-card__subtask-list"
+      >
+        <li>
+          <input
+            aria-label="Review last quarter results"
+            disabled=""
+            type="checkbox"
+          />
+          <span
+            class="done"
+          >
+            Review last quarter results
+          </span>
+        </li>
+        <li>
+          <input
+            aria-label="Draft OKRs"
+            disabled=""
+            type="checkbox"
+          />
+          <span>
+            Draft OKRs
+          </span>
+        </li>
+        
+      </ul>
+    </div>
+    
+  </div>
+  <div
+    class="task-detail-card__actions"
+  >
+    <a
+      class="btn"
+      href="/edit"
+    >
+      Edit task
+    </a>
+    <button
+      class="btn-secondary"
+      type="button"
+    >
+       Delete task 
+    </button>
+    <button
+      class="btn-tertiary"
+      type="button"
+    >
+      ← Back to board
+    </button>
+  </div>
+  
+  
+</div>
+`;
+
+exports[`TaskDetail (snapshots) renders the not-found state 1`] = `
+<div>
+  
+  <p
+    class="empty-state"
+  >
+    Task not found.
+  </p>
+  <div
+    class="task-detail-card__actions"
+  >
+    <button
+      class="btn-tertiary"
+      type="button"
+    >
+      ← Back to board
+    </button>
+  </div>
+  
+</div>
+`;

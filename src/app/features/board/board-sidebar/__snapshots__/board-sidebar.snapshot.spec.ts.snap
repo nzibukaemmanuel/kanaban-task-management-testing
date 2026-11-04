@@ -1,0 +1,192 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`BoardSidebar (snapshots) renders the boards list, expanded 1`] = `
+<div>
+  <aside
+    class="board-sidebar"
+  >
+    <div
+      class="board-sidebar__inner"
+    >
+      <p
+        class="board-sidebar__heading"
+      >
+        All boards (3)
+      </p>
+      <nav
+        aria-label="Boards"
+      >
+        <ul
+          class="board-sidebar__list"
+        >
+          <li>
+            <a
+              class="board-sidebar__link"
+              href="/boards/platform-launch"
+              routerlinkactive="board-sidebar__link--active"
+            >
+              <span
+                aria-hidden="true"
+                class="board-sidebar__icon"
+              />
+              <span
+                class="board-sidebar__label"
+              >
+                platform-launch
+              </span>
+            </a>
+          </li>
+          <li>
+            <a
+              class="board-sidebar__link"
+              href="/boards/marketing-plan"
+              routerlinkactive="board-sidebar__link--active"
+            >
+              <span
+                aria-hidden="true"
+                class="board-sidebar__icon"
+              />
+              <span
+                class="board-sidebar__label"
+              >
+                marketing-plan
+              </span>
+            </a>
+          </li>
+          <li>
+            <a
+              class="board-sidebar__link"
+              href="/boards/roadmap"
+              routerlinkactive="board-sidebar__link--active"
+            >
+              <span
+                aria-hidden="true"
+                class="board-sidebar__icon"
+              />
+              <span
+                class="board-sidebar__label"
+              >
+                roadmap
+              </span>
+            </a>
+          </li>
+          
+        </ul>
+      </nav>
+    </div>
+    <button
+      class="board-sidebar__toggle"
+      type="button"
+    >
+      <span
+        aria-hidden="true"
+      >
+        ⇤
+      </span>
+       Hide sidebar 
+    </button>
+  </aside>
+  
+</div>
+`;
+
+exports[`BoardSidebar (snapshots) renders the collapsed state with its floating "show" button 1`] = `
+<div>
+  <aside
+    class="board-sidebar board-sidebar--collapsed"
+  >
+    <div
+      class="board-sidebar__inner"
+    >
+      <p
+        class="board-sidebar__heading"
+      >
+        All boards (3)
+      </p>
+      <nav
+        aria-label="Boards"
+      >
+        <ul
+          class="board-sidebar__list"
+        >
+          <li>
+            <a
+              class="board-sidebar__link"
+              href="/boards/platform-launch"
+              routerlinkactive="board-sidebar__link--active"
+            >
+              <span
+                aria-hidden="true"
+                class="board-sidebar__icon"
+              />
+              <span
+                class="board-sidebar__label"
+              >
+                platform-launch
+              </span>
+            </a>
+          </li>
+          <li>
+            <a
+              class="board-sidebar__link"
+              href="/boards/marketing-plan"
+              routerlinkactive="board-sidebar__link--active"
+            >
+              <span
+                aria-hidden="true"
+                class="board-sidebar__icon"
+              />
+              <span
+                class="board-sidebar__label"
+              >
+                marketing-plan
+              </span>
+            </a>
+          </li>
+          <li>
+            <a
+              class="board-sidebar__link"
+              href="/boards/roadmap"
+              routerlinkactive="board-sidebar__link--active"
+            >
+              <span
+                aria-hidden="true"
+                class="board-sidebar__icon"
+              />
+              <span
+                class="board-sidebar__label"
+              >
+                roadmap
+              </span>
+            </a>
+          </li>
+          
+        </ul>
+      </nav>
+    </div>
+    <button
+      class="board-sidebar__toggle"
+      type="button"
+    >
+      <span
+        aria-hidden="true"
+      >
+        ⇤
+      </span>
+       Hide sidebar 
+    </button>
+  </aside>
+  <button
+    aria-label="Show sidebar"
+    class="board-sidebar__show"
+    type="button"
+  >
+    <span
+      aria-hidden="true"
+    >
+      ⇥
+    </span>
+  </button>
+  
+</div>
+`;
