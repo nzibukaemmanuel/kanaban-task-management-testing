@@ -1,0 +1,48 @@
+name: CI
+
+# Runs the whole test suite (with the coverage thresholds from jest.config.ts) and the production
+# build on every push and pull request, so a regression is reported before it can be merged.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push to the same branch makes the older, now-pointless run redundant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Angular CLI 22 needs Node ^22.22.3 or ^24.15.0.
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test with coverage
+        # Fails on a failing test or when coverage drops below a threshold in jest.config.ts.
+        run: npm run test:ci
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Build
+        run: npm run build
