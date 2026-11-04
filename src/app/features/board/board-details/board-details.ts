@@ -4,13 +4,13 @@ import { Store } from '@ngrx/store';
 import { describeHttpError } from '../../../core/api/api-error';
 import { NotificationService } from '../../../core/notification.service';
 import { DataState } from '../../../shared/data-state/data-state';
+import { SubtaskProgressPipe } from '../../../shared/pipes/subtask-progress.pipe';
 import { SelectField, SelectFieldOption } from '../../../shared/select-field/select-field';
 import { NotFound } from '../../../pages/not-found/not-found';
 import { BoardSidebar } from '../board-sidebar/board-sidebar';
 import { BoardDataStatus } from '../board-data-status';
 import { BoardService } from '../board.service';
 import { Task } from '../board-data';
-import { TaskEntity } from '../store/task.model';
 import { TaskActions } from '../store/task.actions';
 import { selectAllTasks } from '../store/task.selectors';
 
@@ -21,7 +21,7 @@ const STATUS_COLUMNS: { status: Task['status']; label: string }[] = [
 ];
 
 @Component({
-  imports: [RouterLink, RouterOutlet, SelectField, NotFound, BoardSidebar, DataState],
+  imports: [RouterLink, RouterOutlet, SelectField, NotFound, BoardSidebar, DataState, SubtaskProgressPipe],
   selector: 'app-board-details',
   styleUrl: './board-details.css',
   templateUrl: './board-details.html',
@@ -88,10 +88,6 @@ export class BoardDetails {
       tasks: tasks.filter((task) => task.status === column.status),
     }));
   });
-
-  completedSubtaskCount(task: TaskEntity): number {
-    return task.subtasks.filter((subtask) => subtask.completed).length;
-  }
 
   updateQueryParams(partial: Record<string, string>): void {
     this.router.navigate([], {

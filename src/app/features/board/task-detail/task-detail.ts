@@ -5,11 +5,13 @@ import { Store } from '@ngrx/store';
 import { take } from 'rxjs';
 import { NotificationService } from '../../../core/notification.service';
 import { PreferencesService } from '../../../core/preferences.service';
+import { DueDatePipe } from '../../../shared/pipes/due-date.pipe';
+import { StatusLabelPipe } from '../../../shared/pipes/status-label.pipe';
 import { TaskActions } from '../store/task.actions';
 import { selectAllTasks, selectTasksSaving } from '../store/task.selectors';
 
 @Component({
-  imports: [RouterLink],
+  imports: [DueDatePipe, RouterLink, StatusLabelPipe],
   selector: 'app-task-detail',
   styleUrl: './task-detail.css',
   templateUrl: './task-detail.html',

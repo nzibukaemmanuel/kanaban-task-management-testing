@@ -2,13 +2,13 @@
   <div class="task-detail-card">
     <div class="task-detail-card__header">
       <h2>{{ t.title }}</h2>
-      <span class="status-badge" [attr.data-status]="t.status">{{ t.status }}</span>
+      <span class="status-badge" [attr.data-status]="t.status">{{ t.status | statusLabel }}</span>
     </div>
     @if (t.description) {
       <p class="task-detail-card__description">{{ t.description }}</p>
     }
     @if (t.dueDate) {
-      <p class="task-detail-card__due-date">Due {{ t.dueDate }}</p>
+      <p class="task-detail-card__due-date">Due {{ t.dueDate | dueDate }}</p>
     }
     @if (t.subtasks.length > 0) {
       <div class="task-detail-card__subtasks">
