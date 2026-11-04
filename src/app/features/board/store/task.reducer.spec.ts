@@ -120,4 +120,123 @@ describe('taskReducer', () => {
     expect(state.error).toBe('nope');
     expect(state.entities['q1-goals']).toBeDefined();
   });
+
+  describe('saving flag and errors for writes', () => {
+    it.each([
+      ['Add Task', TaskActions.addTask({ boardId: 'roadmap', task })],
+      ['Update Task', TaskActions.updateTask({ boardId: 'roadmap', taskId: 'q1-goals', task })],
+      ['Delete Task', TaskActions.deleteTask({ boardId: 'roadmap', taskId: 'q1-goals' })],
+    ])('%s raises saving and clears a previous error', (_name, action) => {
+      const state = taskReducer({ ...seededTaskState(), error: 'old' }, action);
+
+      expect(state.saving).toBe(true);
+      expect(state.error).toBeNull();
+    });
+
+    it.each([
+      ['Add Task Failure', TaskActions.addTaskFailure({ error: 'add failed' }), 'add failed'],
+      [
+        'Update Task Failure',
+        TaskActions.updateTaskFailure({ error: 'update failed' }),
+        'update failed',
+      ],
+      [
+        'Delete Task Failure',
+        TaskActions.deleteTaskFailure({ error: 'delete failed' }),
+        'delete failed',
+      ],
+    ])('%s lowers saving, records the error and keeps every task', (_name, action, message) => {
+      const before = { ...seededTaskState(), saving: true };
+
+      const state = taskReducer(before, action);
+
+      expect(state.saving).toBe(false);
+      expect(state.error).toBe(message);
+      expect(state.ids).toEqual(before.ids);
+    });
+
+    it('does not touch the initial-load flags while saving', () => {
+      const state = taskReducer(
+        seededTaskState(),
+        TaskActions.addTask({ boardId: 'roadmap', task }),
+      );
+
+      expect(state.loaded).toBe(true);
+      expect(state.loading).toBe(false);
+    });
+  });
+
+  describe('load results', () => {
+    it('replaces, rather than merges with, tasks already in the store', () => {
+      const state = taskReducer(seededTaskState(), TaskActions.loadTasksSuccess({ tasks: [task] }));
+
+      expect(state.ids).toEqual(['new-task']);
+      expect(state.entities['q1-goals']).toBeUndefined();
+    });
+
+    it('keeps already-loaded tasks visible when a reload fails', () => {
+      const before = seededTaskState();
+
+      const state = taskReducer(before, TaskActions.loadTasksFailure({ error: 'offline' }));
+
+      expect(state.ids).toEqual(before.ids);
+      expect(state.error).toBe('offline');
+    });
+
+    it('clears an old load error on a successful retry', () => {
+      const failed = taskReducer(init(), TaskActions.loadTasksFailure({ error: 'offline' }));
+
+      const state = taskReducer(failed, TaskActions.loadTasksSuccess({ tasks: [task] }));
+
+      expect(state.error).toBeNull();
+      expect(state.loaded).toBe(true);
+    });
+  });
+
+  describe('edge cases', () => {
+    it('ignores an update for a task that is not in the store', () => {
+      const before = seededTaskState();
+
+      const state = taskReducer(
+        before,
+        TaskActions.updateTaskSuccess({ update: { id: 'ghost', changes: { title: 'Nope' } } }),
+      );
+
+      expect(state.ids).toEqual(before.ids);
+      expect(state.entities['ghost']).toBeUndefined();
+    });
+
+    it('ignores a delete for a task that is not in the store', () => {
+      const before = seededTaskState();
+
+      const state = taskReducer(before, TaskActions.deleteTaskSuccess({ taskId: 'ghost' }));
+
+      expect(state.ids).toEqual(before.ids);
+    });
+
+    it('leaves the store unchanged when the removed board has no tasks', () => {
+      const before = seededTaskState();
+
+      const state = taskReducer(before, TaskActions.boardRemoved({ boardId: 'no-such-board' }));
+
+      expect(state.ids).toEqual(before.ids);
+    });
+
+    it('returns the same state object for an unrelated action', () => {
+      const before = seededTaskState();
+
+      expect(taskReducer(before, { type: 'Something Else' })).toBe(before);
+    });
+
+    it('never mutates the previous state', () => {
+      const before = Object.freeze(seededTaskState());
+      const snapshot = structuredClone(before);
+
+      taskReducer(before, TaskActions.addTaskSuccess({ task }));
+      taskReducer(before, TaskActions.deleteTaskSuccess({ taskId: 'q1-goals' }));
+      taskReducer(before, TaskActions.boardRemoved({ boardId: 'roadmap' }));
+
+      expect(before).toEqual(snapshot);
+    });
+  });
 });

@@ -129,4 +129,149 @@ describe('TaskService', () => {
 
     expect(status).toBe(404);
   });
+
+  describe('request details', () => {
+    it('omits the boardId param when no board is given', () => {
+      service.list().subscribe();
+
+      const req = httpMock.expectOne('https://api.test/tasks');
+      expect(req.request.params.keys()).toEqual([]);
+      req.flush([]);
+    });
+
+    it('treats an empty board id like no board at all', () => {
+      service.list('').subscribe();
+
+      const req = httpMock.expectOne('https://api.test/tasks');
+      expect(req.request.params.keys()).toEqual([]);
+      req.flush([]);
+    });
+
+    it('sends every field of a created task, subtasks included', () => {
+      const subtasks = [{ id: 's1', title: 'Step one', completed: true }];
+      service
+        .create('roadmap', {
+          title: 'With subtasks',
+          description: 'Details',
+          status: 'doing',
+          dueDate: '2026-09-01',
+          subtasks,
+        })
+        .subscribe();
+
+      const req = httpMock.expectOne('https://api.test/tasks');
+      expect(req.request.body).toEqual({
+        boardId: 'roadmap',
+        title: 'With subtasks',
+        description: 'Details',
+        status: 'doing',
+        dueDate: '2026-09-01',
+        subtasks,
+      });
+      req.flush({ ...dto, subtasks });
+    });
+
+    it('does not mutate the task object it is given', () => {
+      const task = Object.freeze({
+        title: 'Frozen',
+        description: '',
+        status: 'todo' as const,
+        dueDate: '',
+        subtasks: [],
+      });
+
+      expect(() => service.create('roadmap', task).subscribe()).not.toThrow();
+      httpMock.expectOne('https://api.test/tasks').flush(dto);
+    });
+
+    it('takes the id and board of an update from its arguments, not from the task value', () => {
+      service
+        .update('roadmap', 'q1-goals', {
+          title: 'Renamed',
+          description: '',
+          status: 'todo',
+          dueDate: '',
+          subtasks: [],
+          ...({ id: 'sneaky', boardId: 'other' } as object),
+        })
+        .subscribe();
+
+      const req = httpMock.expectOne('https://api.test/tasks/q1-goals');
+      expect(req.request.body).toMatchObject({
+        id: 'q1-goals',
+        boardId: 'roadmap',
+        title: 'Renamed',
+      });
+      req.flush(dto);
+    });
+
+    it('emits the server version of an updated task', () => {
+      let updated: TaskDto | undefined;
+      service
+        .update('roadmap', 'q1-goals', {
+          title: 'x',
+          description: '',
+          status: 'done',
+          dueDate: '',
+          subtasks: [],
+        })
+        .subscribe((task) => (updated = task));
+
+      httpMock
+        .expectOne('https://api.test/tasks/q1-goals')
+        .flush({ ...dto, title: 'Server title' });
+
+      expect(updated?.title).toBe('Server title');
+    });
+  });
+
+  describe('error handling', () => {
+    const task = {
+      title: 'x',
+      description: '',
+      status: 'todo' as const,
+      dueDate: '',
+      subtasks: [],
+    };
+
+    it.each([
+      ['list', () => service.list(), 'https://api.test/tasks'],
+      ['create', () => service.create('roadmap', task), 'https://api.test/tasks'],
+      [
+        'update',
+        () => service.update('roadmap', 'q1-goals', task),
+        'https://api.test/tasks/q1-goals',
+      ],
+      ['delete', () => service.delete('q1-goals'), 'https://api.test/tasks/q1-goals'],
+    ])('passes a server error from %s through untouched', (_name, call, url) => {
+      let status: number | undefined;
+      call().subscribe({ error: (e) => (status = e.status) });
+
+      httpMock
+        .expectOne(url)
+        .flush({ message: 'boom' }, { status: 500, statusText: 'Server Error' });
+
+      expect(status).toBe(500);
+    });
+
+    it('reports a network failure as status 0', () => {
+      let status: number | undefined;
+      service.list().subscribe({ error: (e) => (status = e.status) });
+
+      httpMock.expectOne('https://api.test/tasks').error(new ProgressEvent('error'));
+
+      expect(status).toBe(0);
+    });
+
+    it('emits nothing for a failed request, so a caller never sees a stale value', () => {
+      const next = jest.fn();
+      service.get('missing').subscribe({ next, error: () => undefined });
+
+      httpMock
+        .expectOne('https://api.test/tasks/missing')
+        .flush({}, { status: 404, statusText: 'Not Found' });
+
+      expect(next).not.toHaveBeenCalled();
+    });
+  });
 });
