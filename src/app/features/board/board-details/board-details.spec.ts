@@ -9,6 +9,7 @@ import { selectAllTasks } from '../store/task.selectors';
 import { BoardDetails } from './board-details';
 import { TaskActions } from '../store/task.actions';
 import { fixtureTaskValue, loadBoardsForTests, provideTaskStoreForTests } from '../store/testing';
+import { waitFor } from '../../../../testing/wait-for';
 
 describe('BoardDetails', () => {
   let component: BoardDetails;
@@ -31,7 +32,7 @@ describe('BoardDetails', () => {
 
   it('navigates back to /boards', () => {
     const router = TestBed.inject(Router);
-    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
 
     component.goBack();
 
@@ -119,7 +120,7 @@ describe('BoardDetails', () => {
       }),
     );
 
-    await vi.waitFor(() =>
+    await waitFor(() =>
       expect(component.tasks().map((t) => t.title)).toContain('Write launch docs (v2)'),
     );
   });
@@ -142,7 +143,7 @@ describe('BoardDetails', () => {
 
   it('merges new query params onto the current route when filtering/sorting', () => {
     const router = TestBed.inject(Router);
-    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
     const route = TestBed.inject(ActivatedRoute);
 
     component.updateQueryParams({ status: 'done' });
@@ -176,7 +177,7 @@ describe('BoardDetails — deleting a board', () => {
       .filter((task) => task.boardId === 'roadmap');
 
   it('asks for confirmation naming the board and how many tasks go with it', () => {
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(false);
 
     component.deleteBoard();
 
@@ -184,8 +185,8 @@ describe('BoardDetails — deleting a board', () => {
   });
 
   it('does nothing when the user declines', () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(false);
-    const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    jest.spyOn(window, 'confirm').mockReturnValue(false);
+    const navigateSpy = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
     component.deleteBoard();
 
@@ -194,12 +195,12 @@ describe('BoardDetails — deleting a board', () => {
   });
 
   it('deletes via the API, drops the board and its tasks locally, and returns to the list', async () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
-    const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    jest.spyOn(window, 'confirm').mockReturnValue(true);
+    const navigateSpy = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
     component.deleteBoard();
 
-    await vi.waitFor(() => expect(navigateSpy).toHaveBeenCalledWith(['/boards']));
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith(['/boards']));
     expect(boards().boardExists('roadmap')).toBe(false);
     expect(roadmapTasks()).toEqual([]);
     expect(TestBed.inject(NotificationService).notice()?.message).toBe(
@@ -208,15 +209,15 @@ describe('BoardDetails — deleting a board', () => {
   });
 
   it('keeps the board and its tasks and shows the error when the server fails', async () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
-    const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    vi.spyOn(boards(), 'delete').mockReturnValue(
+    jest.spyOn(window, 'confirm').mockReturnValue(true);
+    const navigateSpy = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    jest.spyOn(boards(), 'delete').mockReturnValue(
       throwError(() => new HttpErrorResponse({ status: 500 })),
     );
 
     component.deleteBoard();
 
-    await vi.waitFor(() =>
+    await waitFor(() =>
       expect(TestBed.inject(NotificationService).notice()?.kind).toBe('error'),
     );
     expect(boards().boardExists('roadmap')).toBe(true);

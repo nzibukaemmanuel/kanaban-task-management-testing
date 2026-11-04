@@ -10,7 +10,7 @@ describe('NotificationService', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
+    jest.useRealTimers();
     localStorage.clear();
   });
 
@@ -39,40 +39,40 @@ describe('NotificationService', () => {
   });
 
   it('auto-dismisses a success notice after a delay', () => {
-    vi.useFakeTimers();
+    jest.useFakeTimers();
     service.success('Task added.');
     expect(service.notice()).not.toBeNull();
 
-    vi.advanceTimersByTime(4000);
+    jest.advanceTimersByTime(4000);
 
     expect(service.notice()).toBeNull();
   });
 
   it('does not auto-dismiss an error notice', () => {
-    vi.useFakeTimers();
+    jest.useFakeTimers();
     service.error('Something went wrong.');
 
-    vi.advanceTimersByTime(10000);
+    jest.advanceTimersByTime(10000);
 
     expect(service.notice()).not.toBeNull();
   });
 
   it("clears the previous notice's timer so it can't erase a newer notice early", () => {
-    vi.useFakeTimers();
+    jest.useFakeTimers();
     service.success('First.');
-    vi.advanceTimersByTime(3000);
+    jest.advanceTimersByTime(3000);
     service.success('Second.');
-    vi.advanceTimersByTime(3000); // 6000ms since "First.", but only 3000ms since "Second."
+    jest.advanceTimersByTime(3000); // 6000ms since "First.", but only 3000ms since "Second."
 
     expect(service.notice()?.message).toBe('Second.');
   });
 
   it('does not auto-dismiss a success notice once persistSuccess is enabled', () => {
-    vi.useFakeTimers();
+    jest.useFakeTimers();
     service.setPersistSuccess(true);
 
     service.success('Task added.');
-    vi.advanceTimersByTime(10000);
+    jest.advanceTimersByTime(10000);
 
     expect(service.notice()).not.toBeNull();
   });

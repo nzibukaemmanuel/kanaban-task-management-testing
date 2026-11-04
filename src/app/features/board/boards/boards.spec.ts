@@ -9,6 +9,7 @@ import { BoardService } from '../board.service';
 import { Boards } from './boards';
 import { TaskActions } from '../store/task.actions';
 import { loadBoardsForTests, provideTaskStoreForTests } from '../store/testing';
+import { waitFor } from '../../../../testing/wait-for';
 
 describe('Boards', () => {
   let component: Boards;
@@ -31,7 +32,7 @@ describe('Boards', () => {
 
   it('navigates to the selected board when jumping via the quick-jump select', () => {
     const router = TestBed.inject(Router);
-    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
 
     component.jumpToBoard('roadmap');
 
@@ -40,7 +41,7 @@ describe('Boards', () => {
 
   it('does not navigate when no board is selected', () => {
     const router = TestBed.inject(Router);
-    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
 
     component.jumpToBoard('');
 
@@ -62,7 +63,7 @@ describe('Boards', () => {
       }),
     );
 
-    await vi.waitFor(async () =>
+    await waitFor(async () =>
       expect(await firstValueFrom(component.taskCount$('roadmap'))).toBe(before + 1),
     );
   });
@@ -90,7 +91,7 @@ describe('Boards loading and error states', () => {
 
     TestBed.inject(Store).dispatch(TaskActions.loadTasks());
     TestBed.inject(BoardService).load();
-    await vi.waitFor(() => {
+    await waitFor(() => {
       fixture.detectChanges();
       expect(text(fixture)).toContain('Select a board to view its details.');
     });
@@ -102,7 +103,7 @@ describe('Boards loading and error states', () => {
     localStorage.setItem('kanban-mock-api-fail', 'true');
     const fixture = render();
     TestBed.inject(BoardService).load();
-    await vi.waitFor(() => {
+    await waitFor(() => {
       fixture.detectChanges();
       expect(text(fixture)).toContain("Couldn't load boards");
     });
@@ -112,7 +113,7 @@ describe('Boards loading and error states', () => {
       .querySelector<HTMLButtonElement>('.data-state button')
       ?.click();
 
-    await vi.waitFor(() => {
+    await waitFor(() => {
       fixture.detectChanges();
       expect(text(fixture)).toContain('Select a board to view its details.');
     });
@@ -152,7 +153,7 @@ describe('Boards — creating a board', () => {
     component.createBoard();
     expect(component.creating()).toBe(true);
 
-    await vi.waitFor(() =>
+    await waitFor(() =>
       expect(TestBed.inject(BoardService).boardExists('q4-launch')).toBe(true),
     );
     expect(TestBed.inject(NotificationService).notice()).toEqual({
@@ -177,7 +178,7 @@ describe('Boards — creating a board', () => {
   });
 
   it('does not call the API for an invalid name', () => {
-    const create = vi.spyOn(TestBed.inject(BoardService), 'create');
+    const create = jest.spyOn(TestBed.inject(BoardService), 'create');
     component.newBoardForm.controls.name.setValue('roadmap');
 
     component.createBoard();
@@ -187,14 +188,14 @@ describe('Boards — creating a board', () => {
   });
 
   it('shows the server message and keeps the typed name when creation fails', async () => {
-    vi.spyOn(TestBed.inject(BoardService), 'create').mockReturnValue(
+    jest.spyOn(TestBed.inject(BoardService), 'create').mockReturnValue(
       throwError(() => new HttpErrorResponse({ status: 500 })),
     );
     component.newBoardForm.controls.name.setValue('Fresh board');
 
     component.createBoard();
 
-    await vi.waitFor(() =>
+    await waitFor(() =>
       expect(TestBed.inject(NotificationService).notice()?.kind).toBe('error'),
     );
     expect(component.creating()).toBe(false);

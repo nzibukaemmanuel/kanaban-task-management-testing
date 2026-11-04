@@ -153,7 +153,7 @@ describe('Task form navigation (integration)', () => {
       titleInput.dispatchEvent(new Event('input'));
       harness.detectChanges();
 
-      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+      const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(false);
 
       await router.navigateByUrl('/boards/roadmap');
 
@@ -171,7 +171,7 @@ describe('Task form navigation (integration)', () => {
       titleInput.dispatchEvent(new Event('input'));
       harness.detectChanges();
 
-      vi.spyOn(window, 'confirm').mockReturnValue(true);
+      jest.spyOn(window, 'confirm').mockReturnValue(true);
 
       await router.navigateByUrl('/boards/roadmap');
 

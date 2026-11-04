@@ -6,6 +6,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom, throwError } from 'rxjs';
 import { TaskService } from '../task.service';
 import { provideTaskStoreForTests } from '../store/testing';
+import { waitFor } from '../../../../testing/wait-for';
 
 describe('AddTask', () => {
   let fixture: ComponentFixture<AddTask>;
@@ -41,22 +42,22 @@ describe('AddTask', () => {
 
   it('creates the task on the server and navigates back to the board once it is saved', async () => {
     const router = TestBed.inject(Router);
-    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
     const taskService = TestBed.inject(TaskService);
 
     component.onSave(value);
 
-    await vi.waitFor(() => expect(navigateSpy).toHaveBeenCalledWith(['/boards', 'roadmap']));
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith(['/boards', 'roadmap']));
     const saved = await firstValueFrom(taskService.list('roadmap'));
     expect(saved.some((task) => task.title === 'New task')).toBe(true);
   });
 
   it('shows a success notice after saving', async () => {
-    const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const navigateSpy = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const notificationService = TestBed.inject(NotificationService);
 
     component.onSave(value);
-    await vi.waitFor(() => expect(navigateSpy).toHaveBeenCalled());
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalled());
 
     expect(notificationService.notice()).toEqual({
       message: '"New task" was added.',
@@ -65,24 +66,24 @@ describe('AddTask', () => {
   });
 
   it('flags the form as saving while the request is in flight', async () => {
-    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
 
     component.onSave(value);
     expect(component.saving()).toBe(true);
 
-    await vi.waitFor(() => expect(component.saving()).toBe(false));
+    await waitFor(() => expect(component.saving()).toBe(false));
   });
 
   it('stays on the form and shows the server error when saving fails', async () => {
-    const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    vi.spyOn(TestBed.inject(TaskService), 'create').mockReturnValue(
+    const navigateSpy = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    jest.spyOn(TestBed.inject(TaskService), 'create').mockReturnValue(
       throwError(() => new HttpErrorResponse({ status: 500 })),
     );
     const notificationService = TestBed.inject(NotificationService);
 
     component.onSave(value);
 
-    await vi.waitFor(() => expect(notificationService.notice()?.kind).toBe('error'));
+    await waitFor(() => expect(notificationService.notice()?.kind).toBe('error'));
     expect(notificationService.notice()?.message).toContain("Couldn't add the task");
     expect(navigateSpy).not.toHaveBeenCalled();
     expect(component.saving()).toBe(false);
@@ -90,7 +91,7 @@ describe('AddTask', () => {
 
   it('navigates back to the board on cancel', () => {
     const router = TestBed.inject(Router);
-    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
 
     component.onCancel();
 

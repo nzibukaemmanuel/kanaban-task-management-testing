@@ -53,7 +53,7 @@ describe('TaskEffects', () => {
   });
 
   it('loadTasks$ reports a readable failure instead of erroring the stream', async () => {
-    vi.spyOn(taskService, 'list').mockReturnValue(serverError());
+    jest.spyOn(taskService, 'list').mockReturnValue(serverError());
     actions$.next(TaskActions.loadTasks());
 
     const result = await firstValueFrom(effects.loadTasks$);
@@ -133,7 +133,7 @@ describe('TaskEffects', () => {
   });
 
   it('deleteTask$ reports a readable Failure when the server errors', async () => {
-    vi.spyOn(taskService, 'delete').mockReturnValue(serverError());
+    jest.spyOn(taskService, 'delete').mockReturnValue(serverError());
     actions$.next(TaskActions.deleteTask({ boardId: 'roadmap', taskId: 'q1-goals' }));
 
     const result = await firstValueFrom(effects.deleteTask$);

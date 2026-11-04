@@ -9,6 +9,7 @@ import { TaskDetail } from './task-detail';
 import { TaskService } from '../task.service';
 import { TaskActions } from '../store/task.actions';
 import { fixtureTaskValue, provideTaskStoreForTests } from '../store/testing';
+import { waitFor } from '../../../../testing/wait-for';
 
 describe('TaskDetail', () => {
   let component: TaskDetail;
@@ -27,7 +28,7 @@ describe('TaskDetail', () => {
 
   afterEach(() => {
     localStorage.clear();
-    vi.restoreAllMocks();
+    jest.restoreAllMocks();
   });
 
   it('should create', () => {
@@ -61,12 +62,12 @@ describe('TaskDetail', () => {
       }),
     );
 
-    await vi.waitFor(() => expect(component.task()?.status).toBe('done'));
+    await waitFor(() => expect(component.task()?.status).toBe('done'));
   });
 
   it('navigates back to the parent board', () => {
     const router = TestBed.inject(Router);
-    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
     fixture.componentRef.setInput('boardId', 'roadmap');
 
     component.goToBoard();
@@ -86,34 +87,34 @@ describe('TaskDetail', () => {
 
     it('deletes the task on the server and navigates back to the board when confirmation is off', async () => {
       TestBed.inject(PreferencesService).setConfirmBeforeDelete(false);
-      const confirmSpy = vi.spyOn(window, 'confirm');
-      const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      const confirmSpy = jest.spyOn(window, 'confirm');
+      const navigateSpy = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
       open();
 
       component.deleteTask();
 
-      await vi.waitFor(() => expect(navigateSpy).toHaveBeenCalledWith(['/boards', 'roadmap']));
+      await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith(['/boards', 'roadmap']));
       expect(confirmSpy).not.toHaveBeenCalled();
       expect(await exists()).toBe(false);
     });
 
     it('asks for confirmation first and deletes when the user accepts', async () => {
       TestBed.inject(PreferencesService).setConfirmBeforeDelete(true);
-      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-      const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true);
+      const navigateSpy = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
       open();
 
       component.deleteTask();
 
-      expect(confirmSpy).toHaveBeenCalledOnce();
-      await vi.waitFor(() => expect(navigateSpy).toHaveBeenCalled());
+      expect(confirmSpy).toHaveBeenCalledTimes(1);
+      await waitFor(() => expect(navigateSpy).toHaveBeenCalled());
       expect(await exists()).toBe(false);
     });
 
     it('does nothing when the user declines the confirmation prompt', async () => {
       TestBed.inject(PreferencesService).setConfirmBeforeDelete(true);
-      vi.spyOn(window, 'confirm').mockReturnValue(false);
-      const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      jest.spyOn(window, 'confirm').mockReturnValue(false);
+      const navigateSpy = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
       open();
 
       component.deleteTask();
@@ -124,8 +125,8 @@ describe('TaskDetail', () => {
 
     it('stays on the task and shows the error when the server fails the delete', async () => {
       TestBed.inject(PreferencesService).setConfirmBeforeDelete(false);
-      const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-      vi.spyOn(TestBed.inject(TaskService), 'delete').mockReturnValue(
+      const navigateSpy = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+      jest.spyOn(TestBed.inject(TaskService), 'delete').mockReturnValue(
         throwError(() => new HttpErrorResponse({ status: 500 })),
       );
       const notificationService = TestBed.inject(NotificationService);
@@ -133,7 +134,7 @@ describe('TaskDetail', () => {
 
       component.deleteTask();
 
-      await vi.waitFor(() => expect(notificationService.notice()?.kind).toBe('error'));
+      await waitFor(() => expect(notificationService.notice()?.kind).toBe('error'));
       expect(navigateSpy).not.toHaveBeenCalled();
       expect(component.task()).toBeDefined();
     });

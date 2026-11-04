@@ -4,10 +4,12 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "types": [
-      "vitest/globals"
+      "jest"
     ]
   },
   "include": [
+    "jest.config.ts",
+    "setup-jest.ts",
     "src/**/*.d.ts",
     "src/**/*.spec.ts"
   ]

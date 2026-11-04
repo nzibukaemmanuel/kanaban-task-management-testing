@@ -9,15 +9,15 @@ describe('ThemeService', () => {
   afterEach(() => {
     localStorage.clear();
     document.documentElement.removeAttribute('data-theme');
-    vi.restoreAllMocks();
+    jest.restoreAllMocks();
   });
 
   function mockPrefersDark(matches: boolean): void {
     // window.matchMedia lives on the prototype chain in jsdom, not as an own property, so
-    // vi.spyOn(window, 'matchMedia') can't find it to spy on — defineProperty works around that.
+    // jest.spyOn(window, 'matchMedia') can't find it to spy on — defineProperty works around that.
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
-      value: vi.fn().mockReturnValue({ matches } as MediaQueryList),
+      value: jest.fn().mockReturnValue({ matches } as MediaQueryList),
     });
   }
 

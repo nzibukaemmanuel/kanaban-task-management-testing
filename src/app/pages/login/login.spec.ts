@@ -30,7 +30,7 @@ describe('Login', () => {
   it('authenticates and navigates to /settings by default when credentials are correct', () => {
     const auth = TestBed.inject(AuthService);
     const router = TestBed.inject(Router);
-    const navigateByUrlSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const navigateByUrlSpy = jest.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
 
     component.username.set('MANNAZ');
     component.password.set('NZIBUKA123');
@@ -44,7 +44,7 @@ describe('Login', () => {
   it('shows an error and does not navigate when credentials are wrong', () => {
     const auth = TestBed.inject(AuthService);
     const router = TestBed.inject(Router);
-    const navigateByUrlSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const navigateByUrlSpy = jest.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
 
     component.username.set('admin');
     component.password.set('wrong-password');
@@ -58,7 +58,7 @@ describe('Login', () => {
   it('navigates to the configured default board instead of /settings when one is set', () => {
     TestBed.inject(PreferencesService).setDefaultBoardId('roadmap');
     const router = TestBed.inject(Router);
-    const navigateByUrlSpy = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    const navigateByUrlSpy = jest.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
 
     component.username.set('MANNAZ');
     component.password.set('NZIBUKA123');

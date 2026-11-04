@@ -30,7 +30,7 @@ describe('Settings', () => {
 
   it('navigates back to /boards on save', () => {
     const router = TestBed.inject(Router);
-    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
 
     component.save();
 
@@ -49,7 +49,7 @@ describe('Settings', () => {
   });
 
   it('clears the unsaved-changes flag on save', () => {
-    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     fixture.detectChanges();
     const input: HTMLInputElement = fixture.nativeElement.querySelector('input[formcontrolname="displayName"]');
     input.value = 'Grace';
@@ -62,7 +62,7 @@ describe('Settings', () => {
   });
 
   it('applies the chosen theme to ThemeService on save', () => {
-    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const themeService = TestBed.inject(ThemeService);
 
     component.form.controls.theme.setValue('dark');
@@ -72,7 +72,7 @@ describe('Settings', () => {
   });
 
   it('applies confirmBeforeDelete and defaultBoardId to PreferencesService on save', () => {
-    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const preferencesService = TestBed.inject(PreferencesService);
 
     component.form.controls.confirmBeforeDelete.setValue(false);
@@ -84,7 +84,7 @@ describe('Settings', () => {
   });
 
   it('applies persistSuccessNotices to NotificationService on save', () => {
-    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const notificationService = TestBed.inject(NotificationService);
 
     component.form.controls.persistSuccessNotices.setValue(true);

@@ -6,6 +6,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom, throwError } from 'rxjs';
 import { TaskService } from '../task.service';
 import { provideTaskStoreForTests } from '../store/testing';
+import { waitFor } from '../../../../testing/wait-for';
 
 describe('EditTask', () => {
   let fixture: ComponentFixture<EditTask>;
@@ -41,12 +42,12 @@ describe('EditTask', () => {
   };
 
   it('updates the task on the server and navigates back to its detail page once saved', async () => {
-    const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const navigateSpy = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const taskService = TestBed.inject(TaskService);
 
     component.onSave(value);
 
-    await vi.waitFor(() =>
+    await waitFor(() =>
       expect(navigateSpy).toHaveBeenCalledWith(['/boards', 'roadmap', 'tasks', 'q1-goals']),
     );
     expect((await firstValueFrom(taskService.get('q1-goals'))).title).toBe(
@@ -55,11 +56,11 @@ describe('EditTask', () => {
   });
 
   it('shows a success notice after saving', async () => {
-    const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const navigateSpy = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const notificationService = TestBed.inject(NotificationService);
 
     component.onSave(value);
-    await vi.waitFor(() => expect(navigateSpy).toHaveBeenCalled());
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalled());
 
     expect(notificationService.notice()).toEqual({
       message: '"Set Q1 goals (revised)" was updated.',
@@ -68,22 +69,22 @@ describe('EditTask', () => {
   });
 
   it('stays on the form and shows the server error when the update fails', async () => {
-    const navigateSpy = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    vi.spyOn(TestBed.inject(TaskService), 'update').mockReturnValue(
+    const navigateSpy = jest.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    jest.spyOn(TestBed.inject(TaskService), 'update').mockReturnValue(
       throwError(() => new HttpErrorResponse({ status: 0 })),
     );
     const notificationService = TestBed.inject(NotificationService);
 
     component.onSave(value);
 
-    await vi.waitFor(() => expect(notificationService.notice()?.kind).toBe('error'));
+    await waitFor(() => expect(notificationService.notice()?.kind).toBe('error'));
     expect(notificationService.notice()?.message).toContain("can't be reached");
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
   it('navigates back to the task detail page on cancel', () => {
     const router = TestBed.inject(Router);
-    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
 
     component.onCancel();
 
@@ -105,7 +106,7 @@ describe('EditTask', () => {
 
     it('offers a way back to the board, straight there rather than via the (also missing) task detail page', () => {
       const router = TestBed.inject(Router);
-      const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+      const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
 
       (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click();
 

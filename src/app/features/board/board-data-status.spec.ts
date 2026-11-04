@@ -4,6 +4,7 @@ import { BoardDataStatus } from './board-data-status';
 import { BoardService } from './board.service';
 import { TaskActions } from './store/task.actions';
 import { loadBoardsForTests, provideTaskStoreForTests } from './store/testing';
+import { waitFor } from '../../../testing/wait-for';
 
 describe('BoardDataStatus', () => {
   const setup = (seeded: boolean) => {
@@ -43,12 +44,12 @@ describe('BoardDataStatus', () => {
     localStorage.setItem('kanban-mock-api-fail', 'true');
 
     store.dispatch(TaskActions.loadTasks());
-    await vi.waitFor(() => expect(status.error()).toContain("Couldn't load tasks"));
+    await waitFor(() => expect(status.error()).toContain("Couldn't load tasks"));
     expect(status.loading()).toBe(false);
 
     localStorage.removeItem('kanban-mock-api-fail');
     status.retry();
-    await vi.waitFor(() => expect(status.ready()).toBe(true));
+    await waitFor(() => expect(status.ready()).toBe(true));
     expect(status.error()).toBeNull();
   });
 
@@ -57,11 +58,11 @@ describe('BoardDataStatus', () => {
     localStorage.setItem('kanban-mock-api-fail', 'true');
 
     boards.load();
-    await vi.waitFor(() => expect(status.error()).toContain("Couldn't load boards"));
+    await waitFor(() => expect(status.error()).toContain("Couldn't load boards"));
 
     localStorage.removeItem('kanban-mock-api-fail');
     status.retry();
-    await vi.waitFor(() => expect(status.ready()).toBe(true));
+    await waitFor(() => expect(status.ready()).toBe(true));
   });
 
   it('does not treat a failed write as a load error once tasks are loaded', () => {
