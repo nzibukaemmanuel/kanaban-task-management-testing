@@ -423,4 +423,143 @@ describe('TaskForm', () => {
       expect(event.defaultPrevented).toBe(true);
     });
   });
+
+  describe('host-driven inputs and outputs', () => {
+    const submitButton = () =>
+      fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
+
+    it('labels the submit button "Save task" by default', () => {
+      expect(submitButton().textContent?.trim()).toBe('Save task');
+    });
+
+    it('uses the host-provided submit label', () => {
+      fixture.componentRef.setInput('submitLabel', 'Create task');
+      fixture.detectChanges();
+
+      expect(submitButton().textContent?.trim()).toBe('Create task');
+    });
+
+    it('disables submit and shows "Saving…" while the host is saving, then recovers', () => {
+      fixture.componentRef.setInput('saving', true);
+      fixture.detectChanges();
+
+      expect(submitButton().disabled).toBe(true);
+      expect(submitButton().textContent?.trim()).toBe('Saving…');
+
+      fixture.componentRef.setInput('saving', false);
+      fixture.detectChanges();
+
+      expect(submitButton().disabled).toBe(false);
+      expect(submitButton().textContent?.trim()).toBe('Save task');
+    });
+
+    it('re-checks the duplicate title when the host updates existingTitles', () => {
+      setTitle('Ship it');
+      touchTitle();
+      expect(fixture.nativeElement.querySelector('.field-error')).toBeNull();
+
+      fixture.componentRef.setInput('existingTitles', ['Ship it']);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.querySelector('.field-error')?.textContent).toContain(
+        'already exists',
+      );
+    });
+
+    it('does not emit save for an invalid form', () => {
+      const emitted: unknown[] = [];
+      component.save.subscribe((value) => emitted.push(value));
+
+      submitForm();
+
+      expect(emitted).toEqual([]);
+    });
+
+    it('emits save only once per valid submit', () => {
+      const emitted: unknown[] = [];
+      component.save.subscribe((value) => emitted.push(value));
+      setTitle('Ship it');
+      pickStatus(1);
+
+      submitForm();
+
+      expect(emitted).toHaveLength(1);
+    });
+  });
+
+  describe('unsaved-changes hint', () => {
+    const hint = () => fixture.nativeElement.querySelector('.unsaved-hint');
+
+    it('is hidden while the form is pristine', () => {
+      expect(hint()).toBeNull();
+    });
+
+    it('appears once the user edits a field', () => {
+      setTitle('Draft');
+
+      expect(hint()?.textContent).toContain('unsaved changes');
+      expect(hint()?.getAttribute('role')).toBe('status');
+    });
+
+    it('disappears again when the host switches to a different task', () => {
+      setTitle('Draft');
+      fixture.componentRef.setInput('initialTask', {
+        id: 'x',
+        title: 'Other task',
+        description: '',
+        status: 'todo',
+        dueDate: '',
+        subtasks: [],
+      });
+      fixture.detectChanges();
+
+      expect(hint()).toBeNull();
+    });
+  });
+
+  describe('prefilled values in the DOM', () => {
+    beforeEach(() => {
+      fixture.componentRef.setInput('initialTask', {
+        id: 'x',
+        title: 'Existing task',
+        description: 'Some detail',
+        status: 'doing',
+        dueDate: '2026-09-15',
+        subtasks: [{ id: 's1', title: 'First step', completed: true }],
+      });
+      fixture.detectChanges();
+    });
+
+    it('fills the text, description and due-date inputs', () => {
+      expect(titleInput().value).toBe('Existing task');
+      expect(descriptionInput().value).toBe('Some detail');
+      expect(dueDateInput().value).toBe('2026-09-15');
+    });
+
+    it('shows the existing subtask name and its checked state', () => {
+      expect(subtaskTitleInputs().map((input) => input.value)).toEqual(['First step']);
+      expect(subtaskCheckboxes().map((box) => box.checked)).toEqual([true]);
+    });
+
+    it('emits an edited completion flag for a subtask', () => {
+      const emitted: { subtasks: { completed: boolean }[] }[] = [];
+      component.save.subscribe((value) => emitted.push(value));
+
+      subtaskCheckboxes()[0].click();
+      fixture.detectChanges();
+      submitForm();
+
+      expect(emitted[0].subtasks.map((subtask) => subtask.completed)).toEqual([false]);
+    });
+
+    it('keeps the subtask id when saving an edit', () => {
+      const emitted: { subtasks: { id: string }[] }[] = [];
+      component.save.subscribe((value) => emitted.push(value));
+
+      setTitle('Existing task renamed');
+      submitForm();
+
+      expect(emitted[0].subtasks.map((subtask) => subtask.id)).toEqual(['s1']);
+    });
+  });
 });
