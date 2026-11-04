@@ -169,3 +169,109 @@ describe('mockApiInterceptor', () => {
     expect(error.status).toBe(500);
   });
 });
+
+describe('mockApiInterceptor — simulated latency', () => {
+  const LATENCY = 250;
+  let http: HttpClient;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(withInterceptors([mockApiInterceptor])),
+        { provide: API_BASE_URL, useValue: '/api' },
+        { provide: MOCK_API_LATENCY_MS, useValue: LATENCY },
+      ],
+    });
+    http = TestBed.inject(HttpClient);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    localStorage.removeItem('kanban-mock-api-fail');
+  });
+
+  it('holds a response back until the latency has elapsed', async () => {
+    const received = jest.fn();
+    http.get<BoardDto[]>('/api/boards').subscribe(received);
+
+    await jest.advanceTimersByTimeAsync(LATENCY - 1);
+    expect(received).not.toHaveBeenCalled();
+
+    await jest.advanceTimersByTimeAsync(1);
+    expect(received).toHaveBeenCalledTimes(1);
+    expect(received.mock.calls[0][0].map((board: BoardDto) => board.id)).toContain(
+      'platform-launch',
+    );
+  });
+
+  it('delays failures by the same latency, so errors feel like real round-trips', async () => {
+    const failed = jest.fn();
+    http.get('/api/tasks/does-not-exist').subscribe({ error: failed });
+
+    await jest.advanceTimersByTimeAsync(LATENCY - 1);
+    expect(failed).not.toHaveBeenCalled();
+
+    await jest.advanceTimersByTimeAsync(1);
+    expect(failed).toHaveBeenCalledTimes(1);
+    expect((failed.mock.calls[0][0] as HttpErrorResponse).status).toBe(404);
+  });
+
+  it('delays the simulated 500 when the failure flag is set', async () => {
+    localStorage.setItem('kanban-mock-api-fail', 'true');
+    const failed = jest.fn();
+    http.get('/api/boards').subscribe({ error: failed });
+
+    await jest.advanceTimersByTimeAsync(LATENCY - 1);
+    expect(failed).not.toHaveBeenCalled();
+
+    await jest.advanceTimersByTimeAsync(1);
+    expect((failed.mock.calls[0][0] as HttpErrorResponse).status).toBe(500);
+  });
+
+  it('answers concurrent requests independently on the same timeline', async () => {
+    const boards = jest.fn();
+    const tasks = jest.fn();
+    http.get('/api/boards').subscribe(boards);
+    await jest.advanceTimersByTimeAsync(100);
+    http.get('/api/tasks').subscribe(tasks);
+
+    await jest.advanceTimersByTimeAsync(LATENCY - 100);
+    expect(boards).toHaveBeenCalledTimes(1);
+    expect(tasks).not.toHaveBeenCalled();
+
+    await jest.advanceTimersByTimeAsync(100);
+    expect(tasks).toHaveBeenCalledTimes(1);
+  });
+
+  it('applies the change at request time but reports it only after the latency', async () => {
+    const created = jest.fn();
+    http
+      .post<TaskDto>('/api/tasks', {
+        boardId: 'roadmap',
+        title: 'Async created',
+        description: '',
+        status: 'todo',
+        dueDate: '',
+        subtasks: [],
+      })
+      .subscribe(created);
+    expect(created).not.toHaveBeenCalled();
+
+    await jest.advanceTimersByTimeAsync(LATENCY);
+
+    expect(created).toHaveBeenCalledTimes(1);
+    expect(created.mock.calls[0][0]).toMatchObject({ title: 'Async created', boardId: 'roadmap' });
+  });
+
+  it('cancels cleanly: an unsubscribed request never delivers', async () => {
+    const received = jest.fn();
+    const subscription = http.get('/api/boards').subscribe(received);
+
+    subscription.unsubscribe();
+    await jest.advanceTimersByTimeAsync(LATENCY * 2);
+
+    expect(received).not.toHaveBeenCalled();
+    expect(jest.getTimerCount()).toBe(0);
+  });
+});

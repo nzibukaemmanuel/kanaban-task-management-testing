@@ -76,4 +76,121 @@ describe('NotificationService', () => {
 
     expect(service.notice()).not.toBeNull();
   });
+
+  describe('auto-dismiss timing', () => {
+    beforeEach(() => jest.useFakeTimers());
+
+    it('keeps a success notice until the full delay has passed, then clears it', () => {
+      service.success('Task added.');
+
+      jest.advanceTimersByTime(3999);
+      expect(service.notice()).not.toBeNull();
+
+      jest.advanceTimersByTime(1);
+      expect(service.notice()).toBeNull();
+    });
+
+    it('leaves no timer running once a success notice has been cleared', () => {
+      service.success('Task added.');
+
+      jest.advanceTimersByTime(4000);
+
+      expect(jest.getTimerCount()).toBe(0);
+    });
+
+    it('cancels the pending timer when the notice is dismissed by hand', () => {
+      service.success('Task added.');
+
+      service.dismiss();
+
+      expect(service.notice()).toBeNull();
+      expect(jest.getTimerCount()).toBe(0);
+    });
+
+    it('does not let an old success timer erase a newer notice after a manual dismiss', () => {
+      service.success('First.');
+      jest.advanceTimersByTime(2000);
+      service.dismiss();
+      service.success('Second.');
+
+      jest.advanceTimersByTime(3000); // 5000ms after "First.", 3000ms after "Second."
+
+      expect(service.notice()?.message).toBe('Second.');
+    });
+
+    it('keeps an error on screen when it replaces a success whose timer was running', () => {
+      service.success('Saved.');
+      jest.advanceTimersByTime(1000);
+      service.error('Then it failed.');
+
+      jest.advanceTimersByTime(10000);
+
+      expect(service.notice()).toEqual({ message: 'Then it failed.', kind: 'error' });
+    });
+
+    it('starts a fresh countdown when a success replaces an error', () => {
+      service.error('Failed.');
+      jest.advanceTimersByTime(5000);
+      service.success('Recovered.');
+
+      jest.advanceTimersByTime(3999);
+      expect(service.notice()?.message).toBe('Recovered.');
+
+      jest.advanceTimersByTime(1);
+      expect(service.notice()).toBeNull();
+    });
+
+    it('restarts the countdown for each new success rather than adding to it', () => {
+      service.success('One.');
+      jest.advanceTimersByTime(3000);
+      service.success('Two.');
+
+      jest.advanceTimersByTime(3999);
+      expect(service.notice()?.message).toBe('Two.');
+
+      jest.advanceTimersByTime(1);
+      expect(service.notice()).toBeNull();
+    });
+
+    it('stops auto-dismissing new successes as soon as persistSuccess is switched on', () => {
+      service.setPersistSuccess(true);
+      service.success('Sticky.');
+
+      jest.advanceTimersByTime(60_000);
+
+      expect(service.notice()?.message).toBe('Sticky.');
+      expect(jest.getTimerCount()).toBe(0);
+    });
+
+    it('resumes auto-dismissing when persistSuccess is switched back off', () => {
+      service.setPersistSuccess(true);
+      service.setPersistSuccess(false);
+      service.success('Fleeting.');
+
+      jest.advanceTimersByTime(4000);
+
+      expect(service.notice()).toBeNull();
+    });
+  });
+
+  describe('persistence of the persistSuccess preference', () => {
+    it('writes the preference to localStorage once effects have run', () => {
+      service.setPersistSuccess(true);
+      TestBed.tick();
+
+      expect(localStorage.getItem('kanban-persist-success-notices')).toBe('true');
+
+      service.setPersistSuccess(false);
+      TestBed.tick();
+
+      expect(localStorage.getItem('kanban-persist-success-notices')).toBe('false');
+    });
+
+    it('restores the stored preference in a fresh service instance', () => {
+      localStorage.setItem('kanban-persist-success-notices', 'true');
+      TestBed.resetTestingModule();
+
+      expect(TestBed.inject(NotificationService).persistSuccess()).toBe(true);
+    });
+  });
 });

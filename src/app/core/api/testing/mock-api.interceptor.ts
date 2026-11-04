@@ -6,7 +6,7 @@ import {
   HttpResponse,
 } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Observable, delay, of, throwError } from 'rxjs';
+import { Observable, mergeMap, of, throwError, timer } from 'rxjs';
 import { API_BASE_URL } from '../api.config';
 import { MOCK_API_LATENCY_MS } from './mock-api.config';
 import { MockApiDb, MockApiError } from './mock-api.db';
@@ -31,7 +31,9 @@ export const mockApiInterceptor: HttpInterceptorFn = (req, next) => {
   } catch (error) {
     response = throwError(() => toHttpError(req, error));
   }
-  return response.pipe(delay(latency));
+  // timer + mergeMap rather than delay(): delay() only postpones values, so a failure would come
+  // back instantly while a success waited out the latency.
+  return timer(latency).pipe(mergeMap(() => response));
 };
 
 function respond(req: HttpRequest<unknown>, path: string, db: MockApiDb): HttpResponse<unknown> {
